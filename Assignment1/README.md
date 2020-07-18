@@ -97,40 +97,46 @@ Rejection of 1x1 filter due to its inability to capture relations between neighb
 
 
 ## 4. How are kernels initialized? 
- 
-Before we look at different ways of kernel initialization, let’s understand the criticality of initialization,
-“… if you are sloppy with the weight initialization, these non-linearities can “saturate” and entirely stop learning — your training loss will be flat and refuse to go down” – Andrej Karpathy
-Why Initialize Weights 
-The aim of weight initialization is to prevent layer activation outputs from exploding or vanishing during the course of a forward pass through a deep neural network. If either occurs, loss gradients will either be too large or too small to flow backwards beneficially, and the network will take longer to converge if it is even able to do so at all.
+ Before we look at different ways of kernel initialization, let’s understand the criticality of initialization,<br/>
+> “… if you are sloppy with the weight initialization, these non-linearities can “saturate” and entirely stop learning — your training loss will be flat and refuse to go down” – Andrej Karpathy <br/>
+
+**Why Initialize Weights** <br/>
+The aim of weight initialization is to prevent layer activation outputs from exploding or vanishing during the course of a forward pass through a deep neural network. If either occurs, loss gradients will either be too large or too small to flow backwards beneficially, and the network will take longer to converge if it is even able to do so at all. 
+
 Generally, there are four ways to initialize the weights of the kernels before we start training our neural network.
-1. Zero initialization
-2. Random initialization
-3. Xavier Initialization
-4. He-et-al initialization
- 
-How to find the appropriate initialization strategy among the above options?
-Any initialization that prevents the gradients of the network’s activations from vanishing or exploding, is the desirable initialization. The below conditions should satisfy,
-The mean of the activations should be zero. High magnitudes will cause an explosion in gradients.
-The variance of the activations should stay the same across every layer. This will enable good gradient flow. 
- 
-Zero Initialization
-Set all the kernel weights to zero. In this case, all the kernels will output the same feature and no further learning happens. This is as good as having a single kernel extracting one feature. Therefore Zero Initialization is useless.
-Random Initialization
-The kernel weights are initialized very close to zero, but randomly.
-W = np.random.randn(layer_size(l), layer_size(l-1))*0.01
-This works for small networks but can lead to non-homogeneous distributions of activations across the layers of the network. 
-To understand what this means, consider a 4 layer network, the below shows the histograms of activations of across layers,
+  1. Zero initialization
+  2. Random initialization
+  3. Xavier Initialization
+  4. He-et-al initialization<br/>
 
-In this distribution, as we proceed from layer 1 to layer 4, the variance/standard deviation gradually decreases. This is not desirable as mentioned in the appropriate initialization strategy
-Xavier Initialization
-The kernel weights are initialized keeping in mind the size of the previous layer. The weights are still random but differ in range depending on the size of the previous layer of neurons
-W=np.random.randn(layer_size[l], layer_size[l-1]) * np.sqrt (1 / layer_size[l-1] )
+**How to find the appropriate initialization strategy among the above options?**<br/> 
+Any initialization that prevents the gradients of the network’s activations from vanishing or exploding, is the desirable initialization. The below conditions should satisfy, 
+1. The mean of the activations should be zero. High magnitudes will cause an explosion in gradients. 
+2. The variance of the activations should stay the same across every layer. This will enable good gradient flow.
 
-Looking at the distributions across layers, mean is zero and the variance/standard deviation is uniform across all the layers. This still?
- 
-He-et-al initialization
-This method of initializing became famous through a paper submitted in 2015 by He et al, and is similar to Xavier initialization, with the factor multiplied by two. This helps in attaining a global minimum of the cost function faster and more efficiently
-W=np.random.randn(layer_size[l],layer_size[l-1])*np.sqrt(2/layer_size[l-1])
+**1. Zero Initialization** <br/>
+Set all the kernel weights to zero. In this case, all the kernels will output the same feature and no further learning happens. This is as good as having a single kernel extracting one feature. Therefore Zero Initialization is useless. <br/>
+
+**2. Random Initialization** <br/>
+The kernel weights are initialized very close to zero, but randomly. <br/>
+>W = np.random.randn(layer_size(l), layer_size(l-1))*0.01<br/>
+
+This works for small networks but can lead to non-homogeneous distributions of activations across the layers of the network. <br/>
+To understand what this means, consider a 4 layer network, the below shows the histograms of activations of across layers,<br/>
+![alt_text](images/random_init.png) <br/>
+
+In this distribution, as we proceed from layer 1 to layer 4, the variance/standard deviation gradually decreases. This is not desirable as mentioned in the appropriate initialization strategy <br/>
+
+**3. Xavier Initialization** <br/>
+The kernel weights are initialized keeping in mind the size of the previous layer. The weights are still random but differ in range depending on the size of the previous layer of neurons<br/> 
+> W=np.random.randn(layer_size[l], layer_size[l-1]) * np.sqrt (1 / layer_size[l-1] )
+
+![alt_text](images/xavier_init.png)<br/>
+Looking at the distributions across layers, mean is zero and the variance/standard deviation is uniform across all the layers. 
+
+**4. He-et-al initialization** <br/>
+This method of initializing became famous through a paper submitted in 2015 by He et al, and is similar to Xavier initialization, with the factor multiplied by two. This helps in attaining a global minimum of the cost function faster and more efficiently<br/> 
+> W=np.random.randn(layer_size[l],layer_size[l-1])*np.sqrt(2/layer_size[l-1])
 
 
 ## 5. What happens during the training of a DNN?
