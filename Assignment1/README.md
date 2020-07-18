@@ -169,13 +169,14 @@ One may now say that "So how does the neural network identify these patterns or 
 So during training, the neural network learns these parameters. 
 
 ![5_7.gif](images/5_7.gif?raw=true)
+
 The training process consists of the following steps
-Start with some random parameters
-Take an instance from the input data and pass it through the network to obtain the model's prediction.
- We compare the prediction obtained with the expected value and calculate the loss
-Now to minimize this loss we use the gradient descent algorithm. For that, we calculate the gradient of the loss w.r.t. all the parameters.
-We then use this gradient to update the parameters of the neural network in a way that the total loss is reduced and a better model is obtained.
-We repeat steps 2 - 5  until the loss is minimised to a value that is satisfactory. 
+1. Start with some random parameters
+2. Take an instance from the input data and pass it through the network to obtain the model's prediction.
+3. We compare the prediction obtained with the expected value and calculate the loss
+4. Now to minimize this loss we use the gradient descent algorithm. For that, we calculate the gradient of the loss w.r.t. all the parameters.
+5. We then use this gradient to update the parameters of the neural network in a way that the total loss is reduced and a better model is obtained.
+6. We repeat steps 2 - 5  until the loss is minimised to a value that is satisfactory. 
 
 
 
