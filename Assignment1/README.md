@@ -134,34 +134,41 @@ Looking at the distributions across layers, mean is zero and the variance/standa
 He-et-al initialization
 This method of initializing became famous through a paper submitted in 2015 by He et al, and is similar to Xavier initialization, with the factor multiplied by two. This helps in attaining a global minimum of the cost function faster and more efficiently
 W=np.random.randn(layer_size[l],layer_size[l-1])*np.sqrt(2/layer_size[l-1])
-5. What happens during the training of a DNN?
- 
+
+
+## 5. What happens during the training of a DNN?
+
 To understand what happens during training a Deep Neural network we should first understand what a deep neural network is made of and how it works. By understanding what happens during the training process of a neural network we are essentially trying to understand how a neural network learns.
- 
 
-
+![5_1.gif](images/5_1.gif?raw=true)
 
 At its core, a neural network is just a function that when given an input(a number or a collection of numbers) spits out an output(number or a  collection of numbers). The task of the neural net or this function is to understand the underlying pattern within the data.
 
 Throughout these years there have been multiple variations that have been introduced to capture different types of patterns and complexities from different types of data. For our understanding, we will take the example of the simplest feed-forward neural network also known as a multi-layer perceptron or MLP for short. We will later extend our understanding to a Convolution Neural Network or CNN which is a special type of Neural Network most widely used to capture patterns in image data(spatial relation).
+![5_2.gif](images/5_2.gif?raw=true)
 
 Structurally a deep neural network can be broken down into 3 main components; an input layer, output layer, and a bunch of hidden layers. Input layers are where the input gets fed to the neural network (pixel data values for image data). Hidden Layer extracts the relevant patterns from the data. Output layer spits out the predictions. For example, if it’s a classification task output is the predicted class. 
 If you see a neural network you will realize that there's an inherent layered structure which helps the model learn different abstractions at different layers. The idea is similar to breaking a complex problem into much smaller problems and tackling one problem at a time(or for us tackling one at a layer).
 
+![5_3.png](images/5_3.png?raw=true)
+
 For instance, identifying the number 9 can be broken down into identifying the upper circle and a vertical line below it. The circle further can be broken down into multiple arcs which can be broken down into small straight segments or lines. Similarly, the vertical line can be broken down into smaller line segments or edges.
 
+![5_4.png](images/5_4.png?raw=true)
 
 Similarly, all complex patterns can be broken down into such levels of abstractions and the task then becomes to learn these lower-level abstractions such as edges/gradients and use them to build upon higher levels of abstractions such as texture, shapes and eventually objects.
 
+![5_5.png](images/5_5.png?raw=true)
 
 One may now say that "So how does the neural network identify these patterns or concepts or features? ". The short answer is Parameters. Let’s understand this with the help of an example. In a neural network, all the neurons are looking for a specific pattern and when it finds this pattern it “fires up” or in simple words outputs a large number. Every neuron in a layer is dependent on the neurons in the preceding layer with the help of connections. Let’s assume that the neuron gives some weightage to each and every connection. So to make its decision a neuron takes a weighted sum of the values it sees in the previous layers. Also, it might need some threshold to make the decision, i.e. if the value is above a particular threshold it fires up otherwise it stays inactive. Let’s call this threshold a “bias”. This kind of behaviour is analogous to how neurons in the brain fire up when they sense some particular pattern. So in order to find an edge on a particular location in the image, the corresponding weights should be “high” and other neighbouring weights should be “low”. 
 
 
 
+![5_6.gif](images/5_6.gif?raw=true)
 
 So during training, the neural network learns these parameters. 
 
-
+![5_7.gif](images/5_7.gif?raw=true)
 The training process consists of the following steps
 Start with some random parameters
 Take an instance from the input data and pass it through the network to obtain the model's prediction.
