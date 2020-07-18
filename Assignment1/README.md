@@ -77,10 +77,11 @@ No. 1x1 kernels view each pixel independently and do not enable us to capture re
 No. We tend to prefer filters with odd dimensions(3,5,7..etc) because if we were to consider the final output pixel (of the next layer) that was obtained by convolving on the previous layer pixels, all the previous layer pixels would be symmetrically around the output pixel. Without this symmetry, we will have to account for distortions across the layers. This is what happens with kernels having even dimensions. Therefore, even-sized kernel filters are not preferred. This eliminates 2x2 kernels. 
  
 **Therefore, the choice of 3x3 kernels is a consequence of the following:**</br>
-Preference of small kernel sizes due to their ability to extract more fine-grained details from images at greater computational efficiency.
-Preference of odd-dimensional filters.
-Rejection of 1x1 filter due to its inability to capture relations between neighbouring pixels of an image.
- 
+<ol>
+<li>Preference of small kernel sizes due to their ability to extract more fine-grained details from images at greater computational efficiency.</li>
+<li>Preference of odd-dimensional filters.</li>
+<li>Rejection of 1x1 filter due to its inability to capture relations between neighbouring pixels of an image.</li>
+</ol> 
  
  
 ## 3. How many times to we need to perform 3x3 convolutions operations to reach close to 1x1 from 199x199 (type each layer output like 199x199 > 197x197...)
