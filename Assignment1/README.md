@@ -45,44 +45,38 @@ Input image convolved with kernels to extract features. These features are Chann
 	 
 Before we try to answer this question, we need to understand how kernel size impacts a Convolutional Neural Network(CNN). 
  
-To evaluate the impact of the kernel size let us first understand “Receptive fields”:
+To evaluate the impact of the kernel size let us first understand **Receptive fields**:
  
-In the context of CNNs, the receptive field is defined as the region in the input space that a particular CNN’s feature is looking at (i.e. be affected by).
+In the context of CNNs, the **receptive field** is defined as the region in the input space that a particular CNN’s feature is looking at (i.e. be affected by).
  
 Let us consider the following example(as shown in the figure) of an input image(purple) of size 5x5.
- 
-We apply a kernel of size 3x3 on this image to get the first output layer(Yellow) of size 3x3. 
-We apply the 3x3 kernel again to get our final output layer(green) of size 1x1.
- 
+<ol> 
+<li>We apply a kernel of size 3x3 on this image to get the first output layer(Yellow) of size 3x3.</li> 
+<li>We apply the 3x3 kernel again to get our final output layer(green) of size 1x1.</li>
+</ol> 
 
-In the above example, the receptive field of each cell in the yellow layer is 3 as each cell on the yellow layer is influenced by a region of 3x3 from the input image.
-Similarly, the receptive field of the final layer(green) is 5 as the cell in the green layer is indirectly(via yellow layer) able to reach the whole 5x5 region of the input image. 
- 
+![alt_text](images/receptive_fields.gif)<br/> 
+
+<ul>
+<li>In the above example, the receptive field of each cell in the yellow layer is 3 as each cell on the yellow layer is influenced by a region of 3x3 from the input image.</li>
+<li>Similarly, the receptive field of the final layer(green) is 5 as the cell in the green layer is indirectly(via yellow layer) able to reach the whole 5x5 region of the input image.</li> 
+</ul>
+	
 We could have also used a 5x5 kernel to directly reach the output with a single convolution. But here the kernel would require 5x5=25 weights making computation more expensive. By using a 3x3 kernel twice we made use of (3x3 + 3x3) = 18 weights. This makes  3x3 kernels cheaper computationally. But this also leads to an extra layer as compared to the 5x5 kernel case making the 5x5  kernel more memory efficient during backpropagation. 
  
-Let us generalize how small filters are different from large filters:
+*Let us generalize how small filters are different from large filters:*
  
- 
-Smaller Filter Sizes
-Larger Filter Sizes
-We only look at a small number of pixels at a time i.e. there is a smaller receptive field per layer
-We look at a larger number of pixels at a time i.e. there is a larger receptive field per layer.
-The features that would be extracted will be highly local and may not have a more general overview of the image. This helps capture smaller, complex features in the image
-The features that would be extracted will be generic and spread across the image. This helps capture the basic components in the image. 
-The amount of information or features extracted will be vast, which can be further useful in later layers.
-The amount of information or features extracted are considerably lesser (as the dimension of the next layer reduces greatly) and the amount of features we procure is greater.
-In an extreme scenario, using a 1x1 convolution is like considering that each pixel can give us some useful information independently. 
-In an extreme scenario, if we use a convolution filter equal to the size of the image, we will have essentially converted a convolution to a fully connected layer. 
+![alt_text](images/filter_table.png)<br/> 
  
 From the above table, it is clear that small kernel sizes over multiple layers help us extract more fine-grained information and lead to greater computational efficiency. This makes us prefer small kernel sizes over larger ones.
  
-So, are 1x1 kernels ideal?
+*So, are 1x1 kernels ideal?*</br>
 No. 1x1 kernels view each pixel independently and do not enable us to capture relationships with neighboring pixels.
  
-Are 2x2 kernels ideal?
+*Are 2x2 kernels ideal?*</br>
 No. We tend to prefer filters with odd dimensions(3,5,7..etc) because if we were to consider the final output pixel (of the next layer) that was obtained by convolving on the previous layer pixels, all the previous layer pixels would be symmetrically around the output pixel. Without this symmetry, we will have to account for distortions across the layers. This is what happens with kernels having even dimensions. Therefore, even-sized kernel filters are not preferred. This eliminates 2x2 kernels. 
  
-Therefore, the choice of 3x3 kernels is a consequence of the following:
+**Therefore, the choice of 3x3 kernels is a consequence of the following:**</br>
 Preference of small kernel sizes due to their ability to extract more fine-grained details from images at greater computational efficiency.
 Preference of odd-dimensional filters.
 Rejection of 1x1 filter due to its inability to capture relations between neighbouring pixels of an image.
