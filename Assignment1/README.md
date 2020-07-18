@@ -3,7 +3,7 @@ Group Members:
 1) Divyam Malay Shah (divyam096@gmail.com)
 2) Arun Kumar (arun.rvbe@gmail.com)
 3) Shashank Pathak (shashankhalo7@gmail.com)
-1. What are Channels and Kernels (according to EVA)? (Arun)
+## 1. What are Channels and Kernels (according to EVA)? 
 Kernels
 Kernels are feature extractors. Mathematically a kernel is a matrix of weights
 
@@ -46,7 +46,7 @@ In the image above, two filters produce two 4x4 outputs. These are the Channels
 Number of filters = Number of output channels.
  
  
-2. Why should we (nearly) always use 3x3 kernels? (Divyam)
+## 2. Why should we (nearly) always use 3x3 kernels? 
 	 
 Before we try to answer this question, we need to understand how kernel size impacts a Convolutional Neural Network(CNN). 
  
@@ -101,7 +101,7 @@ Rejection of 1x1 filter due to its inability to capture relations between neighb
 ```
 
 
-4. How are kernels initialized? (Arun)
+## 4. How are kernels initialized? 
  
 Before we look at different ways of kernel initialization, let’s understand the criticality of initialization,
 “… if you are sloppy with the weight initialization, these non-linearities can “saturate” and entirely stop learning — your training loss will be flat and refuse to go down” – Andrej Karpathy
