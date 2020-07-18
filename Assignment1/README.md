@@ -4,48 +4,43 @@ Group Members:
 2) Arun Kumar (arun.rvbe@gmail.com)
 3) Shashank Pathak (shashankhalo7@gmail.com)
 ## 1. What are Channels and Kernels (according to EVA)? 
-Kernels
-Kernels are feature extractors. Mathematically a kernel is a matrix of weights
+**Kernels**<br/>
+Kernels are feature extractors. Mathematically a kernel is a matrix of weights<br/>
+![alt_text](images/kernel_def.png)<br/>
+(A sample 3x3 kernel that can be used to sharpen an image)<br/>
+***How does the kernel extract features?***
+- A kernel slides over the input data, performing an element-wise multiplication with the part of the input it is currently on, and then summing up the results into a single output pixel.
+- The kernel repeats this process for every location it slides over and extracts the feature.<br/>
+- 
+***Feature extraction using kernels can be explained as follows:***
+    1. Image is converted into an image matrix
+    2. A kernel of the desired dimension is taken, here 3x3
+    3. Multiply the kernel with the image matrix
+    4. Extracted feature maps form the output at the given layer.
+     
+1. Any image can be represented as a 3 channel Image array, shown below. Each Image array’s value represents the intensity of the image pixel.<br/>
+![alt_text](images/rbg_image_array.png)
+2. A kernel with the below weights will result in the sharpening of the image,<br/>
+ ![alt_text](images/kernel_def.png)
+3. Pixel-wise multiplication of the above kernel with the input image array,<br/>
+ ![alt_text](images/conv_gif.gif)
+4. The output is the sharpened image<br/>
+![alt_text](images/sharpened_image.png)<br/>
+Similarly, by taking different kernel weights different features can be extracted. Few below, <br/>
+![alt_text](images/sample_kernel_examples.png)			
 
-(A sample 3x3 kernel that can be used to sharpen an image)
-How does the kernel extract features?
-A kernel slides over the input data, performing an element-wise multiplication with the part of the input it is currently on, and then summing up the results into a single output pixel.
-The kernel repeats this process for every location it slides over and extracts the feature.
-Feature extraction using kernels can be explained as follows:
-Image is converted into an image matrix
-A kernel of the desired dimension is taken, here 3x3
-Multiply the kernel with the image matrix
-Extracted feature maps form the output at the given layer.
- 
-Any image can be represented as a 3 channel Image array, shown below. Each Image array’s value represents the intensity of the image pixel.
+**Channels**<br/>
+Every input can be represented as a set of channels. Here each channel defines a concept within the input data(Ex R, G, B are three channels in an input image). Each feature extracted by the kernel after the first layer of a CNN leads to the formation of a new Channel. This is also called a feature map<br/>
 
-A kernel with the below weights will result in the sharpening of the image,
- 
-Pixel-wise multiplication of the above kernel with the input image array,
- 
- 
-
-The output is the sharpened image
-
-Similarly, by taking different kernel weights different features can be extracted. Few below, 
-			
-Vertical Edge kernel 	          	
-                               		      	
-			          	
- Horizontal edge kernel
- 
-Channels
-Every input can be represented as a set of channels. Here each channel defines a concept within the input data(Ex R, G, B are three channels in an input image). Each feature extracted by the kernel after the first layer of a CNN leads to the formation of a new Channel. This is also called a feature map
-
+![alt_text](images/channel_volume.png)<br/>
 Input image convolved with kernels to extract features. These features are Channels
  
-For an RGB image (3 channel – Red, Green, Blue). 3x3 Kernel should have a third dimension that matches the number of input channels.  In general, this is called a filter.  In the image above, 3x3x3 forms one filter
-Each filter happens to be a collection of kernels, with there being one kernel for every single input channel. 
-Each filter processes the input with its own, different set of kernels, and a scalar bias with the process described above, producing a single output channel.
-In the image above, two filters produce two 4x4 outputs. These are the Channels
-Number of filters = Number of output channels.
- 
- 
+- For an RGB image (3 channel – Red, Green, Blue). 3x3 Kernel should have a third dimension that matches the number of input channels.  In general, this is called a filter.  In the image above, 3x3x3 forms one filter
+- Each filter happens to be a collection of kernels, with there being one kernel for every single input channel. 
+- Each filter processes the input with its own, different set of kernels, and a scalar bias with the process described above, producing a single output channel.
+- In the image above, two filters produce two 4x4 outputs. These are the Channels
+- Number of filters = Number of output channels.
+  
 ## 2. Why should we (nearly) always use 3x3 kernels? 
 	 
 Before we try to answer this question, we need to understand how kernel size impacts a Convolutional Neural Network(CNN). 
