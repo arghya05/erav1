@@ -1,9 +1,12 @@
 # Assignment 5
 ## Divyam Malay Shah (divyam096@gmail.com)
+<br>
+<br>
 
 
 
 ### Model 1:
+#### Target
 Default model from the previous session:
 Rotation based image augmentation(+- 7 degrees)
 #### Results:
@@ -14,6 +17,7 @@ Best Test Accuracy: 99.45 (15th Epoch)
 This model serves as a starting point for our problem.
 Existing model violates the 10k parameters limit
  
+<br>
  
 ### Model 2:
 #### Target
@@ -26,7 +30,9 @@ Best Test Accuracy: 99.19 (15th Epoch)
 #### Analysis
 Model begins overfitting 8th epoch onwards.
 Accuracy stagnates at 99.19.
- 
+
+<br>
+
 ### Model 3
 #### Target
 Add more augmentations to make learning more challenging.
@@ -37,8 +43,11 @@ Best Test Accuracy: 99.20 (15th Epoch)
 #### Analysis
 Slightly better accuracy than model 3. 
 Training saturates 8th epoch onwards(stagnation of train and test accuracy).
- 
+
+<br>
+
 ### Model 4:
+#### Target
 Apply image augmentations to test set (Test Time Augmentations)
 #### Results
 Parameters: 9560
