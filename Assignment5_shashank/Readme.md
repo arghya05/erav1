@@ -1,50 +1,50 @@
 Shashank Pathak
 
 ### Code1.ipynb
-Target:
+**Target**:
 1. Get the basic code setup (train/test loops) and dataloader. 
 2. Use basic transforms (ToTensor, Normalize)
 3. 15 epochs
-4. Results:
+**Results**:
 * Parameters:  194,884
 * Best Train Accuracy: 99.03
 * Best Test Accuracy: 98.78
-5. Analysis:
+**Analysis**:
 * The model is quite large for MNIST task 
 * Overfitting
 
 ### Code2.ipynb
-Target:
+**Target**:
 1. Decrease the number of parameters (Decrease Kernels, Add GAP Layer)
 2. Add regularisation(Dropout Layers) and 
-3. Results:
+**Results**:
 * Parameters: 6,950
 * Best Train Accuracy: 98.86 %
 * Best Test Accuracy: 99.25%
-4. Analysis:
+**Analysis**:
 * The model performs decently. Potential to improve
 * Underfitting
 
 
 ### Code3.ipynb
-Target:
+**Target**:
 1. As the previous model was undefitting increase the capacity 
-2. Results:
+**Results**:
 * Parameters: 9,060
 * Best Train Accuracy: 98.81
 * Best Test Accuracy: 99.39
-3. Analysis:
+**Analysis**:
 * Capcity can be increased further
 * Transforms can be applied to make train set more like test set
 
 
 
 ### Code4.ipynb
-Target:
-1. Get the basic code setup and finalise the base skeleton with Batch-norm and Gap layers
-2. Results:
+**Target**:
+1. dd transforms and increase capacity further
+**Results**:
 * Parameters: 9,880
 * Best Train Accuracy: 98.33
 * Best Test Accuracy: 99.43
-3. Analysis:
+**Analysis**:
 * The can be trained for more epochs, has potential 
