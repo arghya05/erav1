@@ -1,5 +1,6 @@
 Shashank Pathak
 
+### Code1.ipynb
 Target:
 1. Get the basic code setup (train/test loops) and dataloader. 
 2. Use basic transforms (ToTensor, Normalize)
@@ -12,7 +13,7 @@ Target:
 * The model is quite large for MNIST task 
 * Overfitting
 
-
+### Code2.ipynb
 Target:
 1. Decrease the number of parameters (Decrease Kernels, Add GAP Layer)
 2. Add regularisation(Dropout Layers) and 
@@ -25,7 +26,7 @@ Target:
 * Underfitting
 
 
-
+### Code3.ipynb
 Target:
 1. As the previous model was undefitting increase the capacity 
 2. Results:
@@ -38,7 +39,7 @@ Target:
 
 
 
-
+### Code4.ipynb
 Target:
 1. Get the basic code setup and finalise the base skeleton with Batch-norm and Gap layers
 2. Results:
