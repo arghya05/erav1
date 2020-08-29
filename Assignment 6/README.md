@@ -11,16 +11,16 @@
 
 
 ### Assignment:
-* Use L1 and L2 regularization, and run bellow versions for 25 epochs and report findings:
-1. L1 + BN
-2. L2 + BN
-3. L1 and L2 with BN
-4. GBN
-5. L1 and L2 with GBN
+1. Use L1 and L2 regularization, and run bellow versions for 25 epochs and report findings:
+   * L1 + BN
+   * L2 + BN
+   * L1 and L2 with BN
+   * GBN
+   * L1 and L2 with GBN
 
-* Implement a training loop that can automatically go through and train 5 models based on the above conditions for Code5.ipynb and for all the experiments plot the train and validation loss and accuracies.
-* Add Group Batch Normalisation to Code5 model.
-* Plot 25 Misclassified images for the trained GBN model.
+2. Implement a training loop that can automatically go through and train 5 models based on the above conditions for Code5.ipynb and for all the experiments plot the train and validation loss and accuracies.
+3. Add Group Batch Normalisation to Code5 model.
+4. Plot 25 Misclassified images for the trained GBN model.
 
 
 ### Results:
