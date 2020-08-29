@@ -22,15 +22,15 @@ Implement a training loop that can automatically go through and train 5 models b
 
 ### Results:
 #### 1. Training Accuracy Plot
-[]('images/training_accuracies.png')
+![](images/training_accuracies.png)
 #### 2. Validation Accuracy Plot
-[]('images/validation_accuracies.png')
+![](images/validation_accuracies.png)
 #### 3. Training Losses Plot
-[]('images/training_losses.png')
+![](images/training_losses.png)
 #### 4. Validation Losses Plot
-[]('images/validation_losses.png')
+![](images/validation_losses.png)
 #### 5. Misclassified Images for Model with GBN
-[]('images/misclassifications.png')
+![](images/misclassifications.png)
 
 
 
