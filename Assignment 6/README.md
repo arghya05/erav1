@@ -19,6 +19,9 @@
 5. L1 and L2 with GBN
 
 * Implement a training loop that can automatically go through and train 5 models based on the above conditions for Code5.ipynb and for all the experiments plot the train and validation loss and accuracies.
+* Add Group Batch Normalisation to Code5 model.
+* Plot 25 Misclassified images for the trained GBN model.
+
 
 ### Results:
 #### 1. Training Accuracy Plot
