@@ -98,10 +98,6 @@ class Learner():
       axs[1,1].axis(ymin=95,ymax=100)
       axs[1, 1].plot(self.test_acc)
       axs[1, 1].set_title("Test Accuracy")
-
-      plt.legend(legends, loc='upper right')
-
-      plt.show()
     
     
     def predict(self):
