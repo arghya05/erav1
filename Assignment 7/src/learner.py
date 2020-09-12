@@ -31,7 +31,7 @@ class Learner():
             y_pred = self.model(data)
             loss = self.loss_func(y_pred, target)
             l1=0
-            for p in model.parameters():
+            for p in self.model.parameters():
                 l1 = l1 +p.abs().sum()
             loss= loss +self.lambda_l1*l1
             self.train_losses.append(loss)
@@ -45,7 +45,7 @@ class Learner():
         return self.train_losses,self.train_acc
 
     def test(self):
-        model.eval()
+        self.model.eval()
         test_loss = 0
         correct = 0
         with torch.no_grad():
