@@ -86,6 +86,24 @@ class Learner():
       self.model = self.model.to(self.device)
       summary(self.model, input_size=input_size)
 
+    def plot_losses(self):
+      fig, axs = plt.subplots(2,2,figsize=(15,10))
+      axs[0, 0].plot(self.train_losses)
+      axs[0, 0].set_title("Training Loss")
+      axs[1,0].axis(ymin=95,ymax=100)
+      axs[1, 0].plot(self.train_acc)
+      axs[1, 0].set_title("Training Accuracy")
+      axs[0, 1].plot(self.test_losses)
+      axs[0, 1].set_title("Test Loss")
+      axs[1,1].axis(ymin=95,ymax=100)
+      axs[1, 1].plot(self.test_acc)
+      axs[1, 1].set_title("Test Accuracy")
+
+      plt.legend(legends, loc='upper right')
+
+      plt.show()
+    
+    
     def predict(self):
         pass
 
