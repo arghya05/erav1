@@ -21,7 +21,9 @@ class ImageDataLoader(DataLoader):
             pin_memory = True
         else:
             self.device = device
-
+        
+        self.classes = None
+        
         if category == 'MNIST':
             self.train_loader = datasets.MNIST(
                 self.data_dir,
@@ -52,6 +54,8 @@ class ImageDataLoader(DataLoader):
                 # transform=transforms.build_transforms(train=False)
                 transform=transforms
             )
+            self.classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog',
+                            'horse', 'ship', 'truck')
 
         self.init_kwargs = {
                 'batch_size': batch_size,
