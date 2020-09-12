@@ -82,7 +82,7 @@ class Learner():
     def summary(self,input_size=None):
       if input_size==None:
         input_size= self.test_loader.image_size
-      self.model = self.model.to(device)
+      self.model = self.model.to(self.device)
       summary(self.model, input_size=input_size)
 
     def predict(self):
