@@ -50,7 +50,7 @@ class Learner():
         correct = 0
         with torch.no_grad():
             for data, target in self.test_loader:
-                data, target = data.to(device), target.to(device)
+                data, target = data.to(self.device), target.to(self.device)
                 output = self.model(data)
                 test_loss += self.loss_func(output, target, reduction='sum').item()  
                 pred = output.argmax(dim=1, keepdim=True)  
