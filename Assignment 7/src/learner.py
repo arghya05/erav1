@@ -9,6 +9,7 @@ from torchsummary import summary
 import matplotlib.pyplot as plt
 import numpy as np
 import torchvision.transforms as transforms
+from torch.optim.lr_scheduler import StepLR
 
 class Learner():
     def __init__(self,train_loader,test_loader, model, loss_func=F.nll_loss,metrics=None, model_dir='models',reg=(0,0),device='cuda'):
