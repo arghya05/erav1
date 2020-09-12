@@ -1,3 +1,15 @@
+%matplotlib inline
+from __future__ import print_function
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from torchvision import datasets, transforms
+from tqdm import tqdm
+from torchsummary import summary
+import matplotlib.pyplot as plt
+import numpy as np
+import torchvision.transforms as transforms
 
 class Learner():
     def __init__(self,train_loader,test_loader, model, loss_func=F.nll_loss,metrics=None, model_dir='models',reg=(0,0),device='cuda'):
@@ -56,7 +68,7 @@ class Learner():
 
         return self.test_losses,self.test_acc
 
-    def run_full_cycle(self,epochs=10,lr=0.01,step_size=4,gamma=0.1):
+    def fit(self,epochs=10,lr=0.01,step_size=4,gamma=0.1):
         self.model= self.model.to(self.device)
         optimizer = optim.SGD(self.model.parameters(), lr=lr, momentum=0.9, weight_decay=self.weight_decay)
         scheduler = StepLR(optimizer, step_size=step_size, gamma=gamma)
@@ -67,6 +79,13 @@ class Learner():
             scheduler.step()
             self.test()
 
+
+    def summary(self,input_size=None):
+      if input_size==None:
+        input_size= self.test_loader.image_size
+      self.model = self.model.to(device)
+      summary(self.model, input_size=input_size)
+
     def predict(self):
         pass
 
@@ -74,4 +93,4 @@ class Learner():
         torch.save(self.model, PATH)
 
     def load_model(self, file):
-        self.model = torch.load(file)
+      self.model = torch.load(file)
