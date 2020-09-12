@@ -74,4 +74,4 @@ class Learner():
         torch.save(self.model, PATH)
 
     def load_model(self, file):
-      self.model = torch.load(file)
+        self.model = torch.load(file)
