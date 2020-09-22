@@ -81,7 +81,6 @@ class ImageDataLoader(DataLoader):
             dataiter = iter(self.test_loader)
 
         images, labels = dataiter.next()
-        images = np.transpose(images, (0, 3, 1, 2))
         img = torchvision.utils.make_grid(images)
 
         img = img / 2 + 0.5  # unnormalize
