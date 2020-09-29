@@ -82,7 +82,7 @@ class Learner():
     def fit_custom(self,epochs,optimizer,lr_scheduler):
         self.model= self.model.to(self.device)
         optimizer = optimizer
-        scheduler = scheduler
+        scheduler = lr_scheduler
         EPOCHS = epochs
         for epoch in range(EPOCHS):
             print("EPOCH:", epoch)
