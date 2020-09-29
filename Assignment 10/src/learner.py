@@ -88,7 +88,7 @@ class Learner():
             print("EPOCH:", epoch)
             self.train(optimizer, epoch,lambda_l1=self.lambda_l1)
             scheduler.step()
-             self.test()
+            self.test()
 
 
     def summary(self,input_size=None):
