@@ -79,7 +79,7 @@ class Learner():
             scheduler.step()
             self.test()
 
-    def fit_custom(self,epochs,optimizer,lr_scheduler):
+    def fit_custom(self,epochs,optimizer,lr_scheduler,pass_loss=False):
         self.model= self.model.to(self.device)
         optimizer = optimizer
         scheduler = scheduler
@@ -87,8 +87,12 @@ class Learner():
         for epoch in range(EPOCHS):
             print("EPOCH:", epoch)
             self.train(optimizer, epoch,lambda_l1=self.lambda_l1)
-            scheduler.step()
-             self.test()
+            self.test()
+            if pass_loss:
+                scheduler.step(self.test_losses[-1])    
+            else:
+                scheduler.step()
+            
 
 
     def summary(self,input_size=None):
