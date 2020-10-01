@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 import itertools
 import torch
 
-
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
+
+from .gradcam import GradCam
 
 
 def imshow(img):
@@ -104,15 +105,36 @@ class Interpreter:
         report = pd.DataFrame.from_dict(classification_report(self.y_label, self.pred_label, target_names=self.classes, output_dict=True)).T
         return report
 
-    def show_misclassifications(self, k=25):
-        fig = plt.figure(figsize=(20, 6 * k))
+    def show_misclassifications(self, k=25, gradcam=False):
 
-        for idx in np.arange(k):
-            ax = fig.add_subplot(3 * k, 5, idx + 1)
-            ax.set_title(f'pred: {self.classes[self.incorrect_labels[idx]]}'
-                         f' / correct: {self.classes[self.correct_labels[idx]]}')
-            img = self.incorrect_examples[idx][0]
-            imshow(img)
-        fig.tight_layout()
+        if gradcam:
+            fig = plt.figure(figsize=(20, 6 * k * 2))
+
+            for idx in np.arange(k, 2):
+                img = self.incorrect_examples[idx][0]
+                gm = GradCam(model=self.model, img_tensor=img,
+                             correct_class=self.correct_labels[idx][0], classes=self.classes,
+                             feature_module=self.model.layer4, target_layer_names=['1'])
+                input_img, cam_img = gm.get()
+                ax = fig.add_subplot(3 * k, 6, idx + 1)
+                ax.set_title(f'Input Image')
+                plt.imshow(input_img)
+
+                ax = fig.add_subplot(3 * k, 6, idx + 2)
+                ax.set_title(f'pred: {self.classes[self.incorrect_labels[idx]]}'
+                             f' / correct: {self.classes[self.correct_labels[idx]]}')
+                plt.imshow(cam_img)
+
+            fig.tight_layout()
+        else:
+            fig = plt.figure(figsize=(20, 6 * k))
+
+            for idx in np.arange(k):
+                ax = fig.add_subplot(3 * k, 5, idx + 1)
+                ax.set_title(f'pred: {self.classes[self.incorrect_labels[idx]]}'
+                             f' / correct: {self.classes[self.correct_labels[idx]]}')
+                img = self.incorrect_examples[idx][0]
+                imshow(img)
+            fig.tight_layout()
 
 

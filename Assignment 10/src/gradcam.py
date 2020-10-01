@@ -84,3 +84,12 @@ class GradCam():
         plt.imshow(cam)
 
         fig.tight_layout()
+
+    def get(self):
+        heatmap = cv2.applyColorMap(np.uint8(255 * self.cam), cv2.COLORMAP_JET)
+        heatmap = np.float32(heatmap) / 255
+        img = self.img_tensor[0] / 2 + 0.5
+        img = np.transpose(img.numpy(), (1, 2, 0))
+        cam = heatmap + img
+        cam = cam / np.max(cam)
+        return img, cam
