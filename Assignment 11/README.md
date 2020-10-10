@@ -4,5 +4,6 @@ Group Members:
 3) Shashank Pathak (shashankhalo7@gmail.com)
 
 
-## Assignment 9
-This assignment involves the implementation of the Gradcam module
+## Assignment 11
+This assignment involves the implementation of a custom ResNet architecture that is trained using one cycle policy to
+ achieve 90+ accuracy on CIFAR-10 in less than 24 epochs.
