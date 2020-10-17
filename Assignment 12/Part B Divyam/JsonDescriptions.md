@@ -1,9 +1,9 @@
 # Describing the JSON File
 
 The annotations json(divyam_assignment-12_json.json) contains information related to the annotations on each image within the "Assignment12 images" directory.
-Metadata for each image is indexed by the concatination of its filename and size in bytes. This json was generated using the [Oxford](http://www.robots.ox.ac.uk/~vgg/software/via/via_demo.html) annotation tool.
+Metadata for each image is indexed by the concatenation of its filename and size in bytes. This json was generated using the [Oxford](http://www.robots.ox.ac.uk/~vgg/software/via/via_demo.html) annotation tool.
 
-Lets take the image '2Q__ (1).jpg' as an example to understand how our json captures the annotation infromaton. The size of this image is 8968 bytes and therefore is indexed as
+Lets take the image '2Q__ (1).jpg' as an example to understand how our json captures the annotation information. The size of this image is 8968 bytes and therefore is indexed as
 '2Q__ (1).jpg' + '8968' = `'2Q__ (1).jpg8968'`. 
 
 Now lets take a look at the nested JSON object within this(`'2Q__ (1).jpg8968'`) parent key.
