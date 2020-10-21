@@ -1,5 +1,5 @@
 ### Description of Output JSON File
-# Describing the JSON File
+
 
 The annotations json file consist of the annotations for the scraped Images for the following objects:
 * Hardhats
