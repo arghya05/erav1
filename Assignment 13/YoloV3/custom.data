@@ -1,0 +1,4 @@
+classes=4
+train=/content/YoloV3/train.txt
+valid=/content/YoloV3/test.txt
+names=/content/YoloV3/classes.txt
