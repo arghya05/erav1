@@ -14,9 +14,11 @@
     .
     ├── Images                   # Images scraped from various sources belonging to the 4 classes
     ├── Labels                   # Bounding Box annotations 
-    ├── planercnn_output         # Planar Regions for the images (Output after running [Link](https://github.com/NVlabs/planercnn) on the Image data)
-    ├── depthmap                 # Depth maps for the images (Output after running [Link](https://github.com/intel-isl/MiDaS)
+    ├── planercnn_output         # Planar Regions for the images (Output after running PlaneRCNN on the data)
+    ├── depthmap                 # Depth maps for the images (Output after running MiDaS on the data) 
     ├── train.txt                # List of images in train set
     ├── test.txt                 # List of images in test set
     └── classes.txt              # List of class labels
 
+PlaneRCNN : [Link](https://github.com/NVlabs/planercnn) on the Image data)
+MiDaS: [Link](https://github.com/intel-isl/MiDaS)
