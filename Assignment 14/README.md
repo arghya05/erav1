@@ -7,9 +7,7 @@
 
 ## Data Description:
 
-
 ### Data Source : [Link](https://drive.google.com/drive/folders/1_EW9AxnaZap_tZlIO7XSldNAkg_D0czV?usp=sharing)
-> Folder structure and description of files and folders of the Source
 
 ### Directory layout
 
