@@ -22,5 +22,5 @@
 
 ### References:
 
-* PlaneRCNN : [Link](https://github.com/NVlabs/planercnn) on the Image data)
-* MiDaS: [Link](https://github.com/intel-isl/MiDaS)
+* PlaneRCNN : [Link](https://github.com/NVlabs/planercnn) (3D Plane Detection)
+* MiDaS: [Link](https://github.com/intel-isl/MiDaS) (Monocular Depth Estimation)
