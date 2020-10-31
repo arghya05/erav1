@@ -20,5 +20,7 @@
     ├── test.txt                 # List of images in test set
     └── classes.txt              # List of class labels
 
-PlaneRCNN : [Link](https://github.com/NVlabs/planercnn) on the Image data)
-MiDaS: [Link](https://github.com/intel-isl/MiDaS)
+### References:
+
+* PlaneRCNN : [Link](https://github.com/NVlabs/planercnn) on the Image data)
+* MiDaS: [Link](https://github.com/intel-isl/MiDaS)
