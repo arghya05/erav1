@@ -1,10 +1,18 @@
 import os
 import math
+import time
 
+
+import cv2
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
+import torchvision
+from tqdm import tqdm
 
+from datasets import *
 
 def parse_data_cfg(path):
     # Parses the data configuration file
@@ -23,6 +31,245 @@ def parse_data_cfg(path):
         options[key.strip()] = val.strip()
 
     return options
+
+
+def plot_images(imgs, targets, paths=None, fname='images.png'):
+    # Plots training images overlaid with targets
+    imgs = imgs.cpu().numpy()
+    targets = targets.cpu().numpy()
+    # targets = targets[targets[:, 1] == 21]  # plot only one class
+
+    fig = plt.figure(figsize=(10, 10))
+    bs, _, h, w = imgs.shape  # batch size, _, height, width
+    bs = min(bs, 16)  # limit plot to 16 images
+    ns = np.ceil(bs ** 0.5)  # number of subplots
+
+    for i in range(bs):
+        boxes = xywh2xyxy(targets[targets[:, 0] == i, 2:6]).T
+        boxes[[0, 2]] *= w
+        boxes[[1, 3]] *= h
+        plt.subplot(ns, ns, i + 1).imshow(imgs[i].transpose(1, 2, 0))
+        plt.plot(boxes[[0, 2, 2, 0, 0]], boxes[[1, 1, 3, 3, 1]], '.-')
+        plt.axis('off')
+        if paths is not None:
+            s = Path(paths[i]).name
+            plt.title(s[:min(len(s), 40)], fontdict={'size': 8})  # limit to 40 characters
+    fig.tight_layout()
+    fig.savefig(fname, dpi=200)
+    plt.close()
+
+
+def load_classes(path):
+    # Loads *.names file at 'path'
+    with open(path, 'r') as f:
+        names = f.read().split('\n')
+    return list(filter(None, names))  # filter removes empty strings (such as last line)
+
+def time_synchronized():
+    torch.cuda.synchronize() if torch.cuda.is_available() else None
+    return time.time()
+
+
+def clip_coords(boxes, img_shape):
+    # Clip bounding xyxy bounding boxes to image shape (height, width)
+    boxes[:, 0].clamp_(0, img_shape[1])  # x1
+    boxes[:, 1].clamp_(0, img_shape[0])  # y1
+    boxes[:, 2].clamp_(0, img_shape[1])  # x2
+    boxes[:, 3].clamp_(0, img_shape[0])  # y2
+
+def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, multi_label=True, classes=None, agnostic=False):
+    """
+    Performs  Non-Maximum Suppression on inference results
+    Returns detections with shape:
+        nx6 (x1, y1, x2, y2, conf, cls)
+    """
+
+    # Box constraints
+    min_wh, max_wh = 2, 4096  # (pixels) minimum and maximum box width and height
+
+    method = 'merge'
+    nc = prediction[0].shape[1] - 5  # number of classes
+    multi_label &= nc > 1  # multiple labels per box
+    output = [None] * len(prediction)
+
+    for xi, x in enumerate(prediction):  # image index, image inference
+        # Apply conf constraint
+        x = x[x[:, 4] > conf_thres]
+
+        # Apply width-height constraint
+        x = x[((x[:, 2:4] > min_wh) & (x[:, 2:4] < max_wh)).all(1)]
+
+        # If none remain process next image
+        if not x.shape[0]:
+            continue
+
+        # Compute conf
+        x[..., 5:] *= x[..., 4:5]  # conf = obj_conf * cls_conf
+
+        # Box (center x, center y, width, height) to (x1, y1, x2, y2)
+        box = xywh2xyxy(x[:, :4])
+
+        # Detections matrix nx6 (xyxy, conf, cls)
+        if multi_label:
+            i, j = (x[:, 5:] > conf_thres).nonzero().t()
+            x = torch.cat((box[i], x[i, j + 5].unsqueeze(1), j.float().unsqueeze(1)), 1)
+        else:  # best class only
+            conf, j = x[:, 5:].max(1)
+            x = torch.cat((box, conf.unsqueeze(1), j.float().unsqueeze(1)), 1)
+
+        # Filter by class
+        if classes:
+            x = x[(j.view(-1, 1) == torch.tensor(classes, device=j.device)).any(1)]
+
+        # Apply finite constraint
+        if not torch.isfinite(x).all():
+            x = x[torch.isfinite(x).all(1)]
+
+        # If none remain process next image
+        n = x.shape[0]  # number of boxes
+        if not n:
+            continue
+
+        # Sort by confidence
+        # if method == 'fast_batch':
+        #    x = x[x[:, 4].argsort(descending=True)]
+
+        # Batched NMS
+        c = x[:, 5] * 0 if agnostic else x[:, 5]  # classes
+        boxes, scores = x[:, :4].clone() + c.view(-1, 1) * max_wh, x[:, 4]  # boxes (offset by class), scores
+        if method == 'merge':  # Merge NMS (boxes merged using weighted mean)
+            i = torchvision.ops.boxes.nms(boxes, scores, iou_thres)
+            if n < 1E4:  # update boxes as boxes(i,4) = weights(i,n) * boxes(n,4)
+                # weights = (box_iou(boxes, boxes).tril_() > iou_thres) * scores.view(-1, 1)  # box weights
+                # weights /= weights.sum(0)  # normalize
+                # x[:, :4] = torch.mm(weights.T, x[:, :4])
+                weights = (box_iou(boxes[i], boxes) > iou_thres).float() * scores[None]  # box weights
+                x[i, :4] = torch.mm(weights / weights.sum(1, keepdim=True), x[:, :4]).float()  # merged boxes
+        elif method == 'vision':
+            i = torchvision.ops.boxes.nms(boxes, scores, iou_thres)
+        elif method == 'fast':  # FastNMS from https://github.com/dbolya/yolact
+            iou = box_iou(boxes, boxes).triu_(diagonal=1)  # upper triangular iou matrix
+            i = iou.max(0)[0] < iou_thres
+
+        output[xi] = x[i]
+    return output
+
+
+def compute_ap(recall, precision):
+    """ Compute the average precision, given the recall and precision curves.
+    Source: https://github.com/rbgirshick/py-faster-rcnn.
+    # Arguments
+        recall:    The recall curve (list).
+        precision: The precision curve (list).
+    # Returns
+        The average precision as computed in py-faster-rcnn.
+    """
+
+    # Append sentinel values to beginning and end
+    mrec = np.concatenate(([0.], recall, [min(recall[-1] + 1E-3, 1.)]))
+    mpre = np.concatenate(([0.], precision, [0.]))
+
+    # Compute the precision envelope
+    mpre = np.flip(np.maximum.accumulate(np.flip(mpre)))
+
+    # Integrate area under curve
+    method = 'interp'  # methods: 'continuous', 'interp'
+    if method == 'interp':
+        x = np.linspace(0, 1, 101)  # 101-point interp (COCO)
+        ap = np.trapz(np.interp(x, mrec, mpre), x)  # integrate
+    else:  # 'continuous'
+        i = np.where(mrec[1:] != mrec[:-1])[0]  # points where x axis (recall) changes
+        ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])  # area under curve
+
+    return ap
+
+def ap_per_class(tp, conf, pred_cls, target_cls):
+    """ Compute the average precision, given the recall and precision curves.
+    Source: https://github.com/rafaelpadilla/Object-Detection-Metrics.
+    # Arguments
+        tp:    True positives (nparray, nx1 or nx10).
+        conf:  Objectness value from 0-1 (nparray).
+        pred_cls: Predicted object classes (nparray).
+        target_cls: True object classes (nparray).
+    # Returns
+        The average precision as computed in py-faster-rcnn.
+    """
+
+    # Sort by objectness
+    i = np.argsort(-conf)
+    tp, conf, pred_cls = tp[i], conf[i], pred_cls[i]
+
+    # Find unique classes
+    unique_classes = np.unique(target_cls)
+
+    # Create Precision-Recall curve and compute AP for each class
+    pr_score = 0.1  # score to evaluate P and R https://github.com/ultralytics/yolov3/issues/898
+    s = [len(unique_classes), tp.shape[1]]  # number class, number iou thresholds (i.e. 10 for mAP0.5...0.95)
+    ap, p, r = np.zeros(s), np.zeros(s), np.zeros(s)
+    for ci, c in enumerate(unique_classes):
+        i = pred_cls == c
+        n_gt = (target_cls == c).sum()  # Number of ground truth objects
+        n_p = i.sum()  # Number of predicted objects
+
+        if n_p == 0 or n_gt == 0:
+            continue
+        else:
+            # Accumulate FPs and TPs
+            fpc = (1 - tp[i]).cumsum(0)
+            tpc = tp[i].cumsum(0)
+
+            # Recall
+            recall = tpc / (n_gt + 1e-16)  # recall curve
+            r[ci] = np.interp(-pr_score, -conf[i], recall[:, 0])  # r at pr_score, negative x, xp because xp decreases
+
+            # Precision
+            precision = tpc / (tpc + fpc)  # precision curve
+            p[ci] = np.interp(-pr_score, -conf[i], precision[:, 0])  # p at pr_score
+
+            # AP from recall-precision curve
+            for j in range(tp.shape[1]):
+                ap[ci, j] = compute_ap(recall[:, j], precision[:, j])
+
+            # Plot
+            # fig, ax = plt.subplots(1, 1, figsize=(5, 5))
+            # ax.plot(recall, precision)
+            # ax.set_xlabel('Recall')
+            # ax.set_ylabel('Precision')
+            # ax.set_xlim(0, 1.01)
+            # ax.set_ylim(0, 1.01)
+            # fig.tight_layout()
+            # fig.savefig('PR_curve.png', dpi=300)
+
+    # Compute F1 score (harmonic mean of precision and recall)
+    f1 = 2 * p * r / (p + r + 1e-16)
+
+    return p, r, ap, f1, unique_classes.astype('int32')
+
+
+def box_iou(box1, box2):
+    # https://github.com/pytorch/vision/blob/master/torchvision/ops/boxes.py
+    """
+    Return intersection-over-union (Jaccard index) of boxes.
+    Both sets of boxes are expected to be in (x1, y1, x2, y2) format.
+    Arguments:
+        box1 (Tensor[N, 4])
+        box2 (Tensor[M, 4])
+    Returns:
+        iou (Tensor[N, M]): the NxM matrix containing the pairwise
+            IoU values for every element in boxes1 and boxes2
+    """
+
+    def box_area(box):
+        # box = 4xn
+        return (box[2] - box[0]) * (box[3] - box[1])
+
+    area1 = box_area(box1.t())
+    area2 = box_area(box2.t())
+
+    # inter(N,M) = (rb(N,M,2) - lt(N,M,2)).clamp(0).prod(2)
+    inter = (torch.min(box1[:, None, 2:], box2[:, 2:]) - torch.max(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
+    return inter / (area1[:, None] + area2 - inter)  # iou = inter / (area1 + area2 - inter)
+
 
 def bbox_iou(box1, box2, x1y1x2y2=True, GIoU=False, DIoU=False, CIoU=False):
     # Returns the IoU of box1 to box2. box1 is 4, box2 is nx4
@@ -144,7 +391,7 @@ def build_targets(p, targets, model):
 
         # reject anchors below iou_thres (OPTIONAL, increases P, lowers R)
         if reject:
-            j = iou.view(-1) > hyp['iou_t']  # iou threshold hyperparameter
+            j = iou.view(-1) > model.hyp['iou_t']  # iou threshold hyperparameter
             t, a = t[j], a[j]
 
     # Indices
@@ -172,7 +419,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     ft = torch.cuda.FloatTensor if p[0].is_cuda else torch.Tensor
     lcls, lbox, lobj = ft([0]), ft([0]), ft([0])
     tcls, tbox, indices, anchor_vec = build_targets(p, targets, model)
-    h = hyp  # hyperparameters
+    h = model.hyp  # hyperparameters
     red = 'mean'  # Loss reduction (sum or mean)
 
     # Define criteria

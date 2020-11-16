@@ -1,16 +1,16 @@
 import argparse
 import json
 
+import torch
+import numpy as np
 from torch.utils.data import DataLoader
 
-from models import *
-from utils.datasets import *
-from utils.utils import *
+from model import *
+from datasets import *
+from utils import *
 
 
-def test(cfg,
-         data,
-         weights=None,
+def test(data,
          batch_size=16,
          img_size=416,
          conf_thres=0.001,
@@ -20,58 +20,21 @@ def test(cfg,
          augment=False,
          model=None,
          dataloader=None):
-    # Initialize/load model and set device
-    if model is None:
-        device = torch_utils.select_device(opt.device, batch_size=batch_size)
-        verbose = opt.task == 'test'
 
-        # Remove previous
-        for f in glob.glob('test_batch*.png'):
-            os.remove(f)
-
-        # Initialize model
-        model = Darknet(cfg, img_size)
-
-        # Load weights
-        attempt_download(weights)
-        if weights.endswith('.pt'):  # pytorch format
-            model.load_state_dict(torch.load(weights, map_location=device)['model'])
-        else:  # darknet format
-            load_darknet_weights(model, weights)
-
-        # Fuse
-        model.fuse()
-        model.to(device)
-
-        if device.type != 'cpu' and torch.cuda.device_count() > 1:
-            model = nn.DataParallel(model)
-    else:  # called by train.py
-        device = next(model.parameters()).device  # get model device
-        verbose = False
+    device = next(model.parameters()).device  # get model device
+    verbose = False
 
     # Configure run
-    data = parse_data_cfg(data)
     nc = 1 if single_cls else int(data['classes'])  # number of classes
-    path = data['valid']  # path to test images
     names = load_classes(data['names'])  # class names
     iouv = torch.linspace(0.5, 0.95, 10).to(device)  # iou vector for mAP@0.5:0.95
     iouv = iouv[0].view(1)  # comment for mAP@0.5:0.95
     niou = iouv.numel()
 
-    # Dataloader
-    if dataloader is None:
-        dataset = LoadImagesAndLabels(path, img_size, batch_size, rect=True, single_cls=opt.single_cls)
-        batch_size = min(batch_size, len(dataset))
-        dataloader = DataLoader(dataset,
-                                batch_size=batch_size,
-                                num_workers=min([os.cpu_count(), batch_size if batch_size > 1 else 0, 8]),
-                                pin_memory=True,
-                                collate_fn=dataset.collate_fn)
 
     seen = 0
     model.eval()
     _ = model(torch.zeros((1, 3, img_size, img_size), device=device)) if device.type != 'cpu' else None  # run once
-    coco91class = coco80_to_coco91_class()
     s = ('%20s' + '%10s' * 6) % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP@0.5', 'F1')
     p, r, f1, mp, mr, map, mf1, t0, t1 = 0., 0., 0., 0., 0., 0., 0., 0., 0.
     loss = torch.zeros(3, device=device)
@@ -90,18 +53,18 @@ def test(cfg,
         # Disable gradients
         with torch.no_grad():
             # Run model
-            t = torch_utils.time_synchronized()
-            inf_out, train_out = model(imgs, augment=augment)  # inference and training outputs
-            t0 += torch_utils.time_synchronized() - t
+            t = time_synchronized()
+            _, inf_out, train_out = model(imgs, augment=augment)  # inference and training outputs
+            t0 += time_synchronized() - t
 
             # Compute loss
             if hasattr(model, 'hyp'):  # if model has loss hyperparameters
                 loss += compute_loss(train_out, targets, model)[1][:3]  # GIoU, obj, cls
 
             # Run NMS
-            t = torch_utils.time_synchronized()
+            t = time_synchronized()
             output = non_max_suppression(inf_out, conf_thres=conf_thres, iou_thres=iou_thres)  # nms
-            t1 += torch_utils.time_synchronized() - t
+            t1 += time_synchronized() - t
 
         # Statistics per image
         for si, pred in enumerate(output):
@@ -122,19 +85,6 @@ def test(cfg,
             # Clip boxes to image bounds
             clip_coords(pred, (height, width))
 
-            # Append to pycocotools JSON dictionary
-            if save_json:
-                # [{"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}, ...
-                image_id = int(Path(paths[si]).stem.split('_')[-1])
-                box = pred[:, :4].clone()  # xyxy
-                scale_coords(imgs[si].shape[1:], box, shapes[si][0], shapes[si][1])  # to original shape
-                box = xyxy2xywh(box)  # xywh
-                box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
-                for p, b in zip(pred.tolist(), box.tolist()):
-                    jdict.append({'image_id': image_id,
-                                  'category_id': coco91class[int(p[5])],
-                                  'bbox': [round(x, 3) for x in b],
-                                  'score': round(p[4], 5)})
 
             # Assign all predictions as incorrect
             correct = torch.zeros(pred.shape[0], niou, dtype=torch.bool, device=device)

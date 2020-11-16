@@ -4,6 +4,17 @@ import torch.nn as nn
 import numpy as np
 
 
+yolo_default_cfg = {'type': 'yolo', 'mask': [0, 1, 2], 'anchors': np.array([[ 10.,  13.],
+       [ 16.,  30.],
+       [ 33.,  23.],
+       [ 30.,  61.],
+       [ 62.,  45.],
+       [ 59., 119.],
+       [116.,  90.],
+       [156., 198.],
+       [373., 326.]]), 'classes': 4, 'num': 9, 'jitter': '.3', 'ignore_thresh': '.7', 'truth_thresh': 1, 'random': 1}
+
+
 def _make_encoder(features, use_pretrained):
     pretrained = _make_pretrained_resnext101_wsl(use_pretrained)
     scratch = _make_scratch([256, 512, 1024, 2048], features)
@@ -173,6 +184,7 @@ class YOLOLayer(nn.Module):
         self.nx, self.ny, self.ng = 0, 0, 0  # initialize number of x, y gridpoints
         self.anchor_vec = self.anchors / self.stride
         self.anchor_wh = self.anchor_vec.view(1, self.na, 1, 1, 2)
+        self.grid = None
 
     def create_grids(self, ng=(13, 13), device='cpu'):
         self.nx, self.ny = ng  # x and y grid size
@@ -201,6 +213,7 @@ class YOLOLayer(nn.Module):
             return p
 
         else:  # inference
+            self.create_grids((nx, ny), p.device)
             io = p.clone()  # inference output
             io[..., :2] = torch.sigmoid(io[..., :2]) + self.grid  # xy
             io[..., 2:4] = torch.exp(io[..., 2:4]) * self.anchor_wh  # wh yolo method
@@ -213,7 +226,7 @@ class CustomNet(BaseModel):
     """Network for monocular depth estimation.
     """
 
-    def __init__(self, path=None, features=256, non_negative=True, yolo_cfg=yolo_cfg, nc=4):
+    def __init__(self, path=None, features=256, non_negative=True, yolo_cfg=yolo_default_cfg, nc=4):
         """Init.
         Args:
             path (str, optional): Path to saved model. Defaults to None.
@@ -294,4 +307,4 @@ class CustomNet(BaseModel):
         else:
             x, p = zip(*yolo_out)  # inference output, training output
             x = torch.cat(x, 1)  # cat yolo outputs
-            return x, p
+            return midas_out, x, p
