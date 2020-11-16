@@ -1,0 +1,4 @@
+classes=4
+train=/content/YoloV3_Dataset/train.txt
+valid=/content/YoloV3_Dataset/test.txt
+names=/content/YoloV3_Dataset/classes.txt
