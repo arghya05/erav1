@@ -243,10 +243,11 @@ class CustomNet(BaseModel):
         self.pretrained, self.scratch = _make_encoder(features, use_pretrained)
 
         # YOLOv3
-        self.yolo_init = self.conv1 = nn.Conv2d(2048, features, kernel_size=3, stride=1, padding=1, bias=True)
+        self.yolo_init = nn.Conv2d(2048, 169, kernel_size=3, stride=1, padding=1, bias=True)
+        self.yolo_init2 = nn.Conv2d(49, 256, kernel_size=3, stride=1, padding=1, bias=True)
         self.yolo_preconv1 = ResidualConvUnit(features)
         self.yolo_preconv2 = ResidualConvUnit(features)
-        self.yolo_postconv = nn.Conv2d(features, 81, kernel_size=1, stride=1, padding=1, bias=True)
+        self.yolo_postconv = nn.Conv2d(features, 81, kernel_size=3, stride=1, padding=1, bias=True)
         self.yolo = YOLOLayer(anchors=yolo_cfg['anchors'], nc=yolo_cfg['classes'], stride=8)
 
         # MiDaS
@@ -297,7 +298,9 @@ class CustomNet(BaseModel):
 
         # YOLOv3 Out
         yolo_1 = self.yolo_init(layer_4)
-        yolo_2 = self.yolo_preconv1(yolo_1)
+        yolo_1 = yolo_1.view(yolo_1.shape[0], -1, 13, 13)
+        yolo_1b = self.yolo_init2(yolo_1)
+        yolo_2 = self.yolo_preconv1(yolo_1b)
         yolo_3 = self.yolo_preconv2(yolo_2)
         yolo_post = self.yolo_postconv(yolo_3)
         yolo_out = [self.yolo(yolo_post)]
