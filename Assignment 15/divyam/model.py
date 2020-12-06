@@ -4,7 +4,8 @@ import torch.nn as nn
 import numpy as np
 
 
-yolo_default_cfg = {'type': 'yolo', 'mask': [0, 1, 2], 'anchors': np.array([[ 10.,  13.],
+yolo_default_cfg = {'type': 'yolo', 'mask': [[0, 1, 2],[3, 4, 5], [6, 7, 8]],
+                    'anchors': np.array([[ 10.,  13.],
        [ 16.,  30.],
        [ 33.,  23.],
        [ 30.,  61.],
@@ -12,7 +13,8 @@ yolo_default_cfg = {'type': 'yolo', 'mask': [0, 1, 2], 'anchors': np.array([[ 10
        [ 59., 119.],
        [116.,  90.],
        [156., 198.],
-       [373., 326.]]), 'classes': 4, 'num': 9, 'jitter': '.3', 'ignore_thresh': '.7', 'truth_thresh': 1, 'random': 1}
+       [373., 326.]]), 'classes': 4, 'num': 9, 'jitter': '.3', 'ignore_thresh': '.7',
+                    'truth_thresh': 1, 'random': 1, 'stride': [32, 16, 8]}
 
 
 def _make_encoder(features, use_pretrained):
@@ -124,6 +126,42 @@ class ResidualConvUnit(nn.Module):
 
         return out + x
 
+class ResidualConvUnitBN(nn.Module):
+    """Residual convolution module.
+    """
+
+    def __init__(self, features):
+        """Init.
+        Args:
+            features (int): number of features
+        """
+        super().__init__()
+
+        self.conv1 = nn.Conv2d(
+            features, features, kernel_size=3, stride=1, padding=1, bias=True
+        )
+
+        self.conv2 = nn.Conv2d(
+            features, features, kernel_size=3, stride=1, padding=1, bias=True
+        )
+
+        self.bn = nn.BatchNorm2d(features)
+
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        """Forward pass.
+        Args:
+            x (tensor): input
+        Returns:
+            tensor: output
+        """
+        out = self.relu(x)
+        out = self.conv1(out)
+        out = self.relu(self.bn(out))
+        out = self.bn(self.conv2(out))
+
+        return out + x
 
 class FeatureFusionBlock(nn.Module):
     """Feature fusion block.
@@ -241,14 +279,40 @@ class CustomNet(BaseModel):
         self.nc = nc
 
         self.pretrained, self.scratch = _make_encoder(features, use_pretrained)
+        self.yolo_cfg = yolo_cfg
 
         # YOLOv3
         self.yolo_init = nn.Conv2d(2048, 169, kernel_size=3, stride=1, padding=1, bias=True)
-        self.yolo_init2 = nn.Conv2d(49, 256, kernel_size=3, stride=1, padding=1, bias=True)
-        self.yolo_preconv1 = ResidualConvUnit(features)
-        self.yolo_preconv2 = ResidualConvUnit(features)
-        self.yolo_postconv = nn.Conv2d(features, 81, kernel_size=3, stride=1, padding=1, bias=True)
-        self.yolo = YOLOLayer(anchors=yolo_cfg['anchors'], nc=yolo_cfg['classes'], stride=8)
+        self.yolo_init2 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1, bias=True)
+        self.yolo_preconv1 = ResidualConvUnitBN(features)
+        self.yolo_preconv2 = ResidualConvUnitBN(features)
+        self.yolo_postconv = nn.Conv2d(features, 27, kernel_size=3, stride=1, padding=1, bias=True)
+        self.yolo_head1 = YOLOLayer(anchors=yolo_cfg['anchors'][yolo_cfg['mask'][0]], nc=yolo_cfg['classes'],
+                              stride=yolo_cfg['stride'][0])
+        self.yolo_mid_block = nn.Sequential(
+                                        nn.Conv2d(27, features, kernel_size=3, stride=1, padding=1, bias=True),
+                                        nn.BatchNorm2d(features),
+                                        ResidualConvUnitBN(features),
+                                        ResidualConvUnitBN(features),
+                                        ResidualConvUnitBN(features),
+                                        ResidualConvUnitBN(features),
+                                        nn.Conv2d(features, 27, kernel_size=3, stride=1, padding=1, bias=True),
+                                            )
+        self.yolo_head2 = YOLOLayer(anchors=yolo_cfg['anchors'][yolo_cfg['mask'][1]], nc=yolo_cfg['classes'],
+                                    stride=yolo_cfg['stride'][1])
+        self.yolo_end_block = nn.Sequential(
+                                        nn.Conv2d(27, features, kernel_size=3, stride=1, padding=1, bias=True),
+                                        nn.BatchNorm2d(features),
+                                        ResidualConvUnitBN(features),
+                                        ResidualConvUnitBN(features),
+                                        ResidualConvUnitBN(features),
+                                        ResidualConvUnitBN(features),
+                                        nn.Conv2d(features, 27, kernel_size=3, stride=1, padding=1, bias=True),
+                                            )
+        self.yolo_head3 = YOLOLayer(anchors=yolo_cfg['anchors'][yolo_cfg['mask'][2]], nc=yolo_cfg['classes'],
+                                    stride=yolo_cfg['stride'][2])
+        self.yolo_heads = [self.yolo_head1, self.yolo_head2, self.yolo_head3]
+
 
         # MiDaS
         self.scratch.refinenet4 = FeatureFusionBlock(features)
@@ -297,13 +361,19 @@ class CustomNet(BaseModel):
         midas_out = torch.squeeze(out, dim=1)
 
         # YOLOv3 Out
+        yolo_out = []
         yolo_1 = self.yolo_init(layer_4)
         yolo_1 = yolo_1.view(yolo_1.shape[0], -1, 13, 13)
         yolo_1b = self.yolo_init2(yolo_1)
         yolo_2 = self.yolo_preconv1(yolo_1b)
         yolo_3 = self.yolo_preconv2(yolo_2)
         yolo_post = self.yolo_postconv(yolo_3)
-        yolo_out = [self.yolo(yolo_post)]
+        yolo_out.append(self.yolo_head1(yolo_post))
+        yolo_mid = self.yolo_mid_block(yolo_post)
+        yolo_out.append(self.yolo_head2(yolo_mid))
+        yolo_end = self.yolo_end_block(yolo_mid)
+        yolo_out.append(self.yolo_head3(yolo_end))
+
 
         if self.training:
             return midas_out, yolo_out

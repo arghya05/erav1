@@ -14,6 +14,60 @@ from tqdm import tqdm
 
 from datasets import *
 
+from copy import deepcopy
+
+
+class ModelEMA:
+    """ Model Exponential Moving Average from https://github.com/rwightman/pytorch-image-models
+    Keep a moving average of everything in the model state_dict (parameters and buffers).
+    This is intended to allow functionality like
+    https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage
+    A smoothed version of the weights is necessary for some training schemes to perform well.
+    E.g. Google's hyper-params for training MNASNet, MobileNet-V3, EfficientNet, etc that use
+    RMSprop with a short 2.4-3 epoch decay period and slow LR decay rate of .96-.99 requires EMA
+    smoothing of weights to match results. Pay attention to the decay constant you are using
+    relative to your update count per epoch.
+    To keep EMA from using GPU resources, set device='cpu'. This will save a bit of memory but
+    disable validation of the EMA weights. Validation will have to be done manually in a separate
+    process, or after the training stops converging.
+    This class is sensitive where it is initialized in the sequence of model init,
+    GPU assignment and distributed training wrappers.
+    I've tested with the sequence in my own train.py for torch.DataParallel, apex.DDP, and single-GPU.
+    """
+
+    def __init__(self, model, decay=0.9999, device=''):
+        # make a copy of the model for accumulating moving average of weights
+        self.ema = deepcopy(model)
+        self.ema.eval()
+        self.updates = 0  # number of EMA updates
+        self.decay = lambda x: decay * (1 - math.exp(-x / 2000))  # decay exponential ramp (to help early epochs)
+        self.device = device  # perform ema on different device from model if set
+        if device:
+            self.ema.to(device=device)
+        for p in self.ema.parameters():
+            p.requires_grad_(False)
+
+    def update(self, model):
+        self.updates += 1
+        d = self.decay(self.updates)
+        with torch.no_grad():
+            if type(model) in (nn.parallel.DataParallel, nn.parallel.DistributedDataParallel):
+                msd, esd = model.module.state_dict(), self.ema.module.state_dict()
+            else:
+                msd, esd = model.state_dict(), self.ema.state_dict()
+
+            for k, v in esd.items():
+                if v.dtype.is_floating_point:
+                    v *= d
+                    v += (1. - d) * msd[k].detach()
+
+    def update_attr(self, model):
+        # Assign attributes (which may change during training)
+        for k in model.__dict__.keys():
+            if not k.startswith('_'):
+                setattr(self.ema, k, getattr(model, k))
+
+
 def parse_data_cfg(path):
     # Parses the data configuration file
     if not os.path.exists(path) and os.path.exists('data' + os.sep + path):  # add data/ prefix if omitted
@@ -370,48 +424,47 @@ def build_targets(p, targets, model):
     # m = list(model.modules())[-1]
     # for i in range(m.nl):
     #    anchors = m.anchors[i]
-    multi_gpu = type(model) in (nn.parallel.DataParallel, nn.parallel.DistributedDataParallel)
-    # for i, j in enumerate(model.yolo_layers):
-    # get number of grid points and anchor vec for this yolo layer
-    anchors = model.yolo.anchor_vec
+    for i, j in enumerate(model.yolo_heads):
+        # get number of grid points and anchor vec for this yolo layer
+        anchors = j.anchor_vec
 
-    # iou of targets-anchors
-    gain[2:] = torch.tensor(p[0].shape)[[3, 2, 3, 2]]  # xyxy gain
-    t, a = targets * gain, []
-    gwh = t[:, 4:6]
-    if nt:
-        iou = wh_iou(anchors, gwh)  # iou(3,n) = wh_iou(anchors(3,2), gwh(n,2))
+        # iou of targets-anchors
+        gain[2:] = torch.tensor(p[i].shape)[[3, 2, 3, 2]]  # xyxy gain
+        t, a = targets * gain, []
+        gwh = t[:, 4:6]
+        if nt:
+            iou = wh_iou(anchors, gwh)  # iou(3,n) = wh_iou(anchors(3,2), gwh(n,2))
 
-        if use_all_anchors:
-            na = anchors.shape[0]  # number of anchors
-            a = torch.arange(na).view(-1, 1).repeat(1, nt).view(-1)
-            t = t.repeat(na, 1)
-        else:  # use best anchor only
-            iou, a = iou.max(0)  # best iou and anchor
+            if use_all_anchors:
+                na = anchors.shape[0]  # number of anchors
+                a = torch.arange(na).view(-1, 1).repeat(1, nt).view(-1)
+                t = t.repeat(na, 1)
+            else:  # use best anchor only
+                iou, a = iou.max(0)  # best iou and anchor
 
-        # reject anchors below iou_thres (OPTIONAL, increases P, lowers R)
-        if reject:
-            j = iou.view(-1) > model.hyp['iou_t']  # iou threshold hyperparameter
-            t, a = t[j], a[j]
+            # reject anchors below iou_thres (OPTIONAL, increases P, lowers R)
+            if reject:
+                j = iou.view(-1) > model.hyp['iou_t']  # iou threshold hyperparameter
+                t, a = t[j], a[j]
 
-    # Indices
-    b, c = t[:, :2].long().t()  # target image, class
-    gxy = t[:, 2:4]  # grid x, y
-    gwh = t[:, 4:6]  # grid w, h
-    gi, gj = gxy.long().t()  # grid x, y indices
-    indices.append((b, a, gj, gi))
+        # Indices
+        b, c = t[:, :2].long().t()  # target image, class
+        gxy = t[:, 2:4]  # grid x, y
+        gwh = t[:, 4:6]  # grid w, h
+        gi, gj = gxy.long().t()  # grid x, y indices
+        indices.append((b, a, gj, gi))
 
-    # Box
-    gxy -= gxy.floor()  # xy
-    tbox.append(torch.cat((gxy, gwh), 1))  # xywh (grids)
-    av.append(anchors[a])  # anchor vec
+        # Box
+        gxy -= gxy.floor()  # xy
+        tbox.append(torch.cat((gxy, gwh), 1))  # xywh (grids)
+        av.append(anchors[a])  # anchor vec
 
-    # Class
-    tcls.append(c)
-    if c.shape[0]:  # if any targets
-        assert c.max() < model.nc, 'Model accepts %g classes labeled from 0-%g, however you labelled a class %g. ' \
-                                    'See https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data' % (
-                                        model.nc, model.nc - 1, c.max())
+        # Class
+        tcls.append(c)
+        if c.shape[0]:  # if any targets
+            assert c.max() < model.nc, 'Model accepts %g classes labeled from 0-%g, however you labelled a class %g. ' \
+                                       'See https://github.com/ultralytics/yolov3/wiki/Train-Custom-Data' % (
+                                           model.nc, model.nc - 1, c.max())
 
     return tcls, tbox, indices, av
 

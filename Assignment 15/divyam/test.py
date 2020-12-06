@@ -17,10 +17,8 @@ def test(data,
          iou_thres=0.6,  # for nms
          save_json=False,
          single_cls=False,
-         augment=False,
          model=None,
          dataloader=None):
-
     device = next(model.parameters()).device  # get model device
     verbose = False
 
@@ -31,10 +29,9 @@ def test(data,
     iouv = iouv[0].view(1)  # comment for mAP@0.5:0.95
     niou = iouv.numel()
 
-
     seen = 0
     model.eval()
-    _ = model(torch.zeros((1, 3, img_size, img_size), device=device)) if device.type != 'cpu' else None  # run once
+
     s = ('%20s' + '%10s' * 6) % ('Class', 'Images', 'Targets', 'P', 'R', 'mAP@0.5', 'F1')
     p, r, f1, mp, mr, map, mf1, t0, t1 = 0., 0., 0., 0., 0., 0., 0., 0., 0.
     loss = torch.zeros(3, device=device)
@@ -84,7 +81,6 @@ def test(data,
 
             # Clip boxes to image bounds
             clip_coords(pred, (height, width))
-
 
             # Assign all predictions as incorrect
             correct = torch.zeros(pred.shape[0], niou, dtype=torch.bool, device=device)
@@ -142,73 +138,7 @@ def test(data,
         t = tuple(x / seen * 1E3 for x in (t0, t1, t0 + t1)) + (img_size, img_size, batch_size)  # tuple
         print('Speed: %.1f/%.1f/%.1f ms inference/NMS/total per %gx%g image at batch-size %g' % t)
 
-
     maps = np.zeros(nc) + map
     for i, c in enumerate(ap_class):
         maps[c] = ap[i]
     return (mp, mr, map, mf1, *(loss.cpu() / len(dataloader)).tolist()), maps
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog='test.py')
-    parser.add_argument('--cfg', type=str, default='cfg/yolov3-spp.cfg', help='*.cfg path')
-    parser.add_argument('--data', type=str, default='data/coco2014.data', help='*.data path')
-    parser.add_argument('--weights', type=str, default='weights/yolov3-spp-ultralytics.pt', help='weights path')
-    parser.add_argument('--batch-size', type=int, default=16, help='size of each image batch')
-    parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float, default=0.001, help='object confidence threshold')
-    parser.add_argument('--iou-thres', type=float, default=0.6, help='IOU threshold for NMS')
-    parser.add_argument('--save-json', action='store_true', help='save a cocoapi-compatible JSON results file')
-    parser.add_argument('--task', default='test', help="'test', 'study', 'benchmark'")
-    parser.add_argument('--device', default='', help='device id (i.e. 0 or 0,1) or cpu')
-    parser.add_argument('--single-cls', action='store_true', help='train as single-class dataset')
-    parser.add_argument('--augment', action='store_true', help='augmented inference')
-    opt = parser.parse_args()
-    opt.save_json = opt.save_json or any([x in opt.data for x in ['coco.data', 'coco2014.data', 'coco2017.data']])
-    print(opt)
-
-    # task = 'test', 'study', 'benchmark'
-    if opt.task == 'test':  # (default) test normally
-        test(opt.cfg,
-             opt.data,
-             opt.weights,
-             opt.batch_size,
-             opt.img_size,
-             opt.conf_thres,
-             opt.iou_thres,
-             opt.save_json,
-             opt.single_cls,
-             opt.augment)
-
-    elif opt.task == 'benchmark':  # mAPs at 320-608 at conf 0.5 and 0.7
-        y = []
-        for i in [320, 416, 512, 608]:  # img-size
-            for j in [0.5, 0.7]:  # iou-thres
-                t = time.time()
-                r = test(opt.cfg, opt.data, opt.weights, opt.batch_size, i, opt.conf_thres, j, opt.save_json)[0]
-                y.append(r + (time.time() - t,))
-        np.savetxt('benchmark.txt', y, fmt='%10.4g')  # y = np.loadtxt('study.txt')
-
-    elif opt.task == 'study':  # Parameter study
-        y = []
-        x = np.arange(0.4, 0.9, 0.05)  # iou-thres
-        for i in x:
-            t = time.time()
-            r = test(opt.cfg, opt.data, opt.weights, opt.batch_size, opt.img_size, opt.conf_thres, i, opt.save_json)[0]
-            y.append(r + (time.time() - t,))
-        np.savetxt('study.txt', y, fmt='%10.4g')  # y = np.loadtxt('study.txt')
-
-        # Plot
-        fig, ax = plt.subplots(3, 1, figsize=(6, 6))
-        y = np.stack(y, 0)
-        ax[0].plot(x, y[:, 2], marker='.', label='mAP@0.5')
-        ax[0].set_ylabel('mAP')
-        ax[1].plot(x, y[:, 3], marker='.', label='mAP@0.5:0.95')
-        ax[1].set_ylabel('mAP')
-        ax[2].plot(x, y[:, -1], marker='.', label='time')
-        ax[2].set_ylabel('time (s)')
-        for i in range(3):
-            ax[i].legend()
-            ax[i].set_xlabel('iou_thr')
-        fig.tight_layout()
-        plt.savefig('study.jpg', dpi=200)
