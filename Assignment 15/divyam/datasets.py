@@ -276,7 +276,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
 
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
-    def __init__(self, path, img_size=416, batch_size=16, augment=False, hyp=None, rect=False, image_weights=False,
+    def __init__(self, path, seg_cfg, img_size=416, batch_size=16, augment=False, hyp=None, rect=False, image_weights=False,
                  cache_labels=True, cache_images=False, single_cls=False):
         path = str(Path(path))  # os-agnostic
         assert os.path.isfile(path), 'File not found %s. See %s' % (path, help_url)
@@ -297,6 +297,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         self.image_weights = image_weights
         self.rect = False if image_weights else rect
         self.mosaic = self.augment and not self.rect  # load 4 images at a time into a mosaic (only during training)
+        self.seg_cfg = seg_cfg
 
         # Define labels
         self.label_files = [x.replace('Images', 'Labels').replace(os.path.splitext(x)[-1], '.txt')
@@ -508,14 +509,27 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
         img = np.ascontiguousarray(img)
 
-        return torch.from_numpy(img), labels_out, self.img_files[index], shapes
+        # Plane segmentation meta-data
+
+        seg_image = cv2.imread(self.img_files[index])
+        seg_image = cv2.resize(seg_image, self.seg_cfg['size'], interpolation=cv2.INTER_LINEAR)
+        seg_image = seg_image[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+        seg_image = np.ascontiguousarray(seg_image)
+        img_name = self.img_files[index].split("/Images/")[-1]
+        seg_mask = np.load(self.seg_cfg["meta_data_path"] + "/" + img_name + "_plane_masks_0.npy")
+        seg_class_ids = np.load(self.seg_cfg["meta_data_path"] + "/" + img_name + "_classes_0.npy")
+        masks_cum = np.zeros((8, 480, 640), dtype=int)
+        for i in range(len(seg_class_ids)):
+            masks_cum[int(seg_class_ids[i])] = masks_cum[int(seg_class_ids[i])] + seg_mask[i]
+
+        return torch.from_numpy(img), labels_out, torch.from_numpy(seg_image), torch.from_numpy(masks_cum), self.img_files[index], shapes
 
     @staticmethod
     def collate_fn(batch):
-        img, label, path, shapes = zip(*batch)  # transposed
+        img, label, seg_img, seg_msk, path, shapes = zip(*batch)  # transposed
         for i, l in enumerate(label):
             l[:, 0] = i  # add target image index for build_targets()
-        return torch.stack(img, 0), torch.cat(label, 0), path, shapes
+        return torch.stack(img, 0), torch.cat(label, 0), torch.stack(seg_img, 0), torch.stack(seg_msk, 0), path, shapes
 
 
 def load_image(self, index):

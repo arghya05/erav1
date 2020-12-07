@@ -60,7 +60,7 @@ def run(model, midas_model, input_path, output_path):
         # compute
         with torch.no_grad():
             sample = torch.from_numpy(img_input).to(device).unsqueeze(0)
-            prediction, _, _ = model.forward(sample)
+            prediction, _, _, _ = model.forward(sample, sample)
             prediction_midas = midas_model.forward(sample)
             prediction = (
                 torch.nn.functional.interpolate(
@@ -86,10 +86,14 @@ def run(model, midas_model, input_path, output_path):
             )
 
         # output
-        filename = os.path.join(
-            output_path, os.path.splitext(os.path.basename(img_name))[0]
+        trained_filename = os.path.join(
+            output_path, 'trained_' + os.path.splitext(os.path.basename(img_name))[0]
         )
-        write_depth('trained_'+filename, prediction, bits=2)
-        write_depth('intel_midas_'+filename, prediction_midas, bits=2)
+        write_depth(trained_filename, prediction, bits=2)
+
+        intel_filename = os.path.join(
+            output_path, 'intel_' + os.path.splitext(os.path.basename(img_name))[0]
+        )
+        write_depth(intel_filename, prediction_midas, bits=2)
 
     print("finished")

@@ -20,8 +20,9 @@ yolo_default_cfg = {'type': 'yolo', 'mask': [[0, 1, 2],[3, 4, 5], [6, 7, 8]],
 def _make_encoder(features, use_pretrained):
     pretrained = _make_pretrained_resnext101_wsl(use_pretrained)
     scratch = _make_scratch([256, 512, 1024, 2048], features)
+    plane_segmentation_decode = _make_scratch([256, 512, 1024, 2048], features)
 
-    return pretrained, scratch
+    return pretrained, scratch, plane_segmentation_decode
 
 
 def _make_resnet_backbone(resnet):
@@ -264,7 +265,7 @@ class CustomNet(BaseModel):
     """Network for monocular depth estimation.
     """
 
-    def __init__(self, path=None, features=256, non_negative=True, yolo_cfg=yolo_default_cfg, nc=4):
+    def __init__(self, path=None, features=256, non_negative=True, yolo_cfg=yolo_default_cfg, nc=4, plane_classes=8):
         """Init.
         Args:
             path (str, optional): Path to saved model. Defaults to None.
@@ -278,7 +279,7 @@ class CustomNet(BaseModel):
         use_pretrained = False if path is None else True
         self.nc = nc
 
-        self.pretrained, self.scratch = _make_encoder(features, use_pretrained)
+        self.pretrained, self.scratch, self.plane_segmentation_decode = _make_encoder(features, use_pretrained)
         self.yolo_cfg = yolo_cfg
 
         # YOLOv3
@@ -329,10 +330,24 @@ class CustomNet(BaseModel):
             nn.ReLU(True) if non_negative else nn.Identity(),
         )
 
+        # Plane Segmentation
+        self.plane_segmentation_decode.refinenet4 = FeatureFusionBlock(features)
+        self.plane_segmentation_decode.refinenet3 = FeatureFusionBlock(features)
+        self.plane_segmentation_decode.refinenet2 = FeatureFusionBlock(features)
+        self.plane_segmentation_decode.refinenet1 = FeatureFusionBlock(features)
+
+        self.plane_segmentation_decode.output_conv = nn.Sequential(
+            nn.Conv2d(features, 128, kernel_size=3, stride=1, padding=1),
+            Interpolate(scale_factor=2, mode="bilinear"),
+            nn.Conv2d(128, 32, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(True),
+            nn.Conv2d(32, plane_classes, kernel_size=1, stride=1, padding=0),
+        )
+
         if path:
             self.load(path)
 
-    def forward(self, x):
+    def forward(self, x, seg_x):
         """Forward pass.
         Args:
             x (tensor): input data (image)
@@ -360,6 +375,25 @@ class CustomNet(BaseModel):
         out = self.scratch.output_conv(path_1)
         midas_out = torch.squeeze(out, dim=1)
 
+        # Plane Segmentation
+
+        seg_layer_1 = self.pretrained.layer1(seg_x)
+        seg_layer_2 = self.pretrained.layer2(seg_layer_1)
+        seg_layer_3 = self.pretrained.layer3(seg_layer_2)
+        seg_layer_4 = self.pretrained.layer4(seg_layer_3)
+
+        seg_layer_1_rn = self.plane_segmentation_decode.layer1_rn(seg_layer_1)
+        seg_layer_2_rn = self.plane_segmentation_decode.layer2_rn(seg_layer_2)
+        seg_layer_3_rn = self.plane_segmentation_decode.layer3_rn(seg_layer_3)
+        seg_layer_4_rn = self.plane_segmentation_decode.layer4_rn(seg_layer_4)
+
+        seg_path_4 = self.plane_segmentation_decode.refinenet4(seg_layer_4_rn)
+        seg_path_3 = self.plane_segmentation_decode.refinenet3(seg_path_4, seg_layer_3_rn)
+        seg_path_2 = self.plane_segmentation_decode.refinenet2(seg_path_3, seg_layer_2_rn)
+        seg_path_1 = self.plane_segmentation_decode.refinenet1(seg_path_2, seg_layer_1_rn)
+
+        plane_pred = self.plane_segmentation_decode.output_conv(seg_path_1)
+
         # YOLOv3 Out
         yolo_out = []
         yolo_1 = self.yolo_init(layer_4)
@@ -376,8 +410,8 @@ class CustomNet(BaseModel):
 
 
         if self.training:
-            return midas_out, yolo_out
+            return midas_out, plane_pred, yolo_out
         else:
             x, p = zip(*yolo_out)  # inference output, training output
             x = torch.cat(x, 1)  # cat yolo outputs
-            return midas_out, x, p
+            return midas_out, plane_pred, x, p
