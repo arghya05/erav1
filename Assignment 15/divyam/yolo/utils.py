@@ -468,7 +468,7 @@ def build_targets(p, targets, model):
 
     return tcls, tbox, indices, av
 
-def compute_loss(p, targets, model):  # predictions, targets, model
+def compute_yolo_loss(p, targets, model):  # predictions, targets, model
     ft = torch.cuda.FloatTensor if p[0].is_cuda else torch.Tensor
     lcls, lbox, lobj = ft([0]), ft([0]), ft([0])
     tcls, tbox, indices, anchor_vec = build_targets(p, targets, model)
