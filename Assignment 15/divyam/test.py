@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 
 from model import *
 from datasets import *
-from utils import *
+from yolo.utils import *
 
 
 def test(data,
@@ -37,9 +37,8 @@ def test(data,
     p, r, f1, mp, mr, map, mf1, t0, t1 = 0., 0., 0., 0., 0., 0., 0., 0., 0.
     loss = torch.zeros(3, device=device)
     jdict, stats, ap, ap_class = [], [], [], []
-    for batch_i, (imgs, targets, seg_inp, seg_mask, paths, shapes) in enumerate(tqdm(dataloader, desc=s)):
+    for batch_i, (imgs, targets, seg_mask, paths, shapes) in enumerate(tqdm(dataloader, desc=s)):
         imgs = imgs.to(device).float() / 255.0  # uint8 to float32, 0 - 255 to 0.0 - 1.0
-        seg_inp = seg_inp.to(device).float() / 255.0
         seg_mask = seg_mask.to(device)
         targets = targets.to(device)
         nb, _, height, width = imgs.shape  # batch size, channels, height, width
@@ -54,12 +53,12 @@ def test(data,
         with torch.no_grad():
             # Run model
             t = time_synchronized()
-            _, _, inf_out, train_out = model(imgs, seg_inp)  # inference and training outputs
+            _, _, inf_out, train_out = model(imgs)  # inference and training outputs
             t0 += time_synchronized() - t
 
             # Compute loss
             if hasattr(model, 'hyp'):  # if model has loss hyperparameters
-                loss += compute_loss(train_out, targets, model)[1][:3]  # GIoU, obj, cls
+                loss += compute_yolo_loss(train_out, targets, model)[1][:3]  # GIoU, obj, cls
 
             # Run NMS
             t = time_synchronized()

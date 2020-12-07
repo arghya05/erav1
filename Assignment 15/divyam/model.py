@@ -284,7 +284,7 @@ class CustomNet(BaseModel):
 
         # YOLOv3
         self.yolo_init = nn.Conv2d(2048, 169, kernel_size=3, stride=1, padding=1, bias=True)
-        self.yolo_init2 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1, bias=True)
+        self.yolo_init2 = nn.Conv2d(169, 256, kernel_size=3, stride=1, padding=1, bias=True)
         self.yolo_preconv1 = ResidualConvUnitBN(features)
         self.yolo_preconv2 = ResidualConvUnitBN(features)
         self.yolo_postconv = nn.Conv2d(features, 27, kernel_size=3, stride=1, padding=1, bias=True)
@@ -347,7 +347,7 @@ class CustomNet(BaseModel):
         if path:
             self.load(path)
 
-    def forward(self, x, seg_x):
+    def forward(self, x):
         """Forward pass.
         Args:
             x (tensor): input data (image)
@@ -377,15 +377,10 @@ class CustomNet(BaseModel):
 
         # Plane Segmentation
 
-        seg_layer_1 = self.pretrained.layer1(seg_x)
-        seg_layer_2 = self.pretrained.layer2(seg_layer_1)
-        seg_layer_3 = self.pretrained.layer3(seg_layer_2)
-        seg_layer_4 = self.pretrained.layer4(seg_layer_3)
-
-        seg_layer_1_rn = self.plane_segmentation_decode.layer1_rn(seg_layer_1)
-        seg_layer_2_rn = self.plane_segmentation_decode.layer2_rn(seg_layer_2)
-        seg_layer_3_rn = self.plane_segmentation_decode.layer3_rn(seg_layer_3)
-        seg_layer_4_rn = self.plane_segmentation_decode.layer4_rn(seg_layer_4)
+        seg_layer_1_rn = self.plane_segmentation_decode.layer1_rn(layer_1)
+        seg_layer_2_rn = self.plane_segmentation_decode.layer2_rn(layer_2)
+        seg_layer_3_rn = self.plane_segmentation_decode.layer3_rn(layer_3)
+        seg_layer_4_rn = self.plane_segmentation_decode.layer4_rn(layer_4)
 
         seg_path_4 = self.plane_segmentation_decode.refinenet4(seg_layer_4_rn)
         seg_path_3 = self.plane_segmentation_decode.refinenet3(seg_path_4, seg_layer_3_rn)
@@ -397,7 +392,7 @@ class CustomNet(BaseModel):
         # YOLOv3 Out
         yolo_out = []
         yolo_1 = self.yolo_init(layer_4)
-        yolo_1 = yolo_1.view(yolo_1.shape[0], -1, 13, 13)
+        # yolo_1 = yolo_1.view(yolo_1.shape[0], -1, 13, 13)
         yolo_1b = self.yolo_init2(yolo_1)
         yolo_2 = self.yolo_preconv1(yolo_1b)
         yolo_3 = self.yolo_preconv2(yolo_2)

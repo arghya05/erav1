@@ -11,14 +11,14 @@ from .transforms import Resize, NormalizeImage, PrepareForNet
 from .utils import read_image, write_depth
 
 
-def run(model, midas_model, input_path, output_path):
+def run(model, midas_model, size, input_path, output_path):
     print("initialize")
 
     # select device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("device: %s" % device)
 
-    net_w, net_h = 224, 224
+    net_w, net_h = size, size
     transform = Compose(
         [
             Resize(
@@ -60,7 +60,7 @@ def run(model, midas_model, input_path, output_path):
         # compute
         with torch.no_grad():
             sample = torch.from_numpy(img_input).to(device).unsqueeze(0)
-            prediction, _, _, _ = model.forward(sample, sample)
+            prediction, _, _, _ = model.forward(sample)
             prediction_midas = midas_model.forward(sample)
             prediction = (
                 torch.nn.functional.interpolate(
