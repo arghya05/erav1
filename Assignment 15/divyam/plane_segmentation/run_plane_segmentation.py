@@ -23,8 +23,8 @@ def run(model, image_path, size, thresh=0.3):
 
     class_ids = list(range(8))
     masks = np.transpose(req.cpu().numpy()[0], (1, 2, 0))
-    masks[masks > 0.3] = 1
-    masks[masks <= 0.3] = 0
+    masks[masks > thresh] = 1
+    masks[masks <= thresh] = 0
 
     N = len(class_ids)
     instance_colors = ColorPalette(N).getColorMap(returnTuples=True)
@@ -57,4 +57,4 @@ def run(model, image_path, size, thresh=0.3):
 
         continue
 
-    return masked_image
+    return masked_image, masks
