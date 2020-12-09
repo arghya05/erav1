@@ -11,17 +11,14 @@ from yolo.utils import *
 
 
 def test(data,
-         batch_size=16,
-         img_size=416,
          conf_thres=0.001,
          iou_thres=0.6,  # for nms
-         save_json=False,
          single_cls=False,
          model=None,
-         midas_model=None,
-         dataloader=None):
+         dataloader=None,
+         verbose=False):
+
     device = next(model.parameters()).device  # get model device
-    verbose = False
 
     # Configure run
     nc = 1 if single_cls else int(data['classes'])  # number of classes
@@ -135,10 +132,6 @@ def test(data,
         for i, c in enumerate(ap_class):
             print(pf % (names[c], seen, nt[c], p[i], r[i], ap[i], f1[i]))
 
-    # Print speeds
-    if verbose or save_json:
-        t = tuple(x / seen * 1E3 for x in (t0, t1, t0 + t1)) + (img_size, img_size, batch_size)  # tuple
-        print('Speed: %.1f/%.1f/%.1f ms inference/NMS/total per %gx%g image at batch-size %g' % t)
 
     maps = np.zeros(nc) + map
     for i, c in enumerate(ap_class):

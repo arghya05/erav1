@@ -11,7 +11,7 @@ from .transforms import Resize, NormalizeImage, PrepareForNet
 from .utils import read_image, write_depth
 
 
-def run(model, midas_model, size, input_path, output_path):
+def run(model, size, input_path, output_path):
     print("initialize")
 
     # select device
@@ -61,7 +61,6 @@ def run(model, midas_model, size, input_path, output_path):
         with torch.no_grad():
             sample = torch.from_numpy(img_input).to(device).unsqueeze(0)
             prediction, _, _, _ = model.forward(sample)
-            prediction_midas = midas_model.forward(sample)
             prediction = (
                 torch.nn.functional.interpolate(
                     prediction.unsqueeze(1),
@@ -73,17 +72,6 @@ def run(model, midas_model, size, input_path, output_path):
                 .cpu()
                 .numpy()
             )
-            prediction_midas = (
-                torch.nn.functional.interpolate(
-                    prediction_midas.unsqueeze(1),
-                    size=img.shape[:2],
-                    mode="bicubic",
-                    align_corners=False,
-                )
-                    .squeeze()
-                    .cpu()
-                    .numpy()
-            )
 
         # output
         trained_filename = os.path.join(
@@ -91,9 +79,5 @@ def run(model, midas_model, size, input_path, output_path):
         )
         write_depth(trained_filename, prediction, bits=2)
 
-        intel_filename = os.path.join(
-            output_path, 'intel_' + os.path.splitext(os.path.basename(img_name))[0]
-        )
-        write_depth(intel_filename, prediction_midas, bits=2)
 
     print("finished")
