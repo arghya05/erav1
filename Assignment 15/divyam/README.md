@@ -30,7 +30,7 @@ dataset and extract its contents.
 Once data is downloaded and extracted, it can be loaded using the train/test split as specified by [train.txt](./train.txt) and
 [test.txt](./test.txt). 
 
-Training our model:
+## Training our model:
  
  1) Depth Estimation:
  To train our model for depth estimation we use the intel MiDaS model as a teacher model. The
@@ -47,5 +47,5 @@ Training our model:
     the PlaneRCNN model.
      PlaneRCNN annotations for our dataset can be found [here](https://drive.google.com/file/d/1rmRO109i-zkM2iRxUZYs__n8FAPU0iqO/view?usp=sharing).
   
-  You can refer to this [notebook](./notebook/Assignment15.ipynb) to get started.  
+  ### You can refer to this [notebook](./notebook/Assignment15.ipynb) to get started.  
 
