@@ -1,4 +1,4 @@
-#Trinity Decoder
+# Trinity Decoder
 By Divyam Malay Shah (divyam096@gmail.com)
 ### This assignment is still incomplete. It should be complete in another 1-2 days. 
 
