@@ -1,8 +1,7 @@
 import argparse
 from sys import platform
 
-from models import *  # set ONNX_EXPORT in models.py
-from ..datasets import *
+from datasets import *
 from .utils import *
 
 
