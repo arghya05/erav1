@@ -1,6 +1,5 @@
 # Trinity Decoder
 By Divyam Malay Shah (divyam096@gmail.com)
-### This assignment is still incomplete. It should be complete in another 1-2 days. 
 
 This project contains the implementation of a trinity decoder CNN that enables simultaneous depth estimation,
 plane segmentation and object detection. The architecture for the same can be seen in the image below.
