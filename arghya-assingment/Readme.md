@@ -32,7 +32,7 @@ More details on these experiments can be found [here](https://github.com/gkdivya
 
 By fine tuning the model with the step by step approach, the [final model](https://github.com/gkdivya/EVA/blob/main/5_CodingDrillDown/MNIST_BestModel.ipynb) was able to reach best test accuracy of **99.53%** in **15 epochs** with just **6720 (6K parameters)**!!!
 
-![image](https://user-images.githubusercontent.com/17870236/120801028-46c75b80-c55e-11eb-9797-07532b18be0f.png)
+
 
 ## Receptive Field calculation:
 
@@ -128,10 +128,5 @@ Formula reference:</br>
       Test set: Average loss: 0.0168, Accuracy: 9950/10000 (99.50%)
 
 
-<p align="center"><img src="https://user-images.githubusercontent.com/42609155/120590215-d0d8cc80-c457-11eb-877e-2c904aa27f8f.png" width="800"></p>
 
-## Collaborators
-- Divya Kamat (divya.r.kamat@gmail.com)
-- Divya G K (gkdivya@gmail.com)
-- Garvit Garg (garvit.gargs@gmail.com)
-- Sarang (jaya.sarangan@gmail.com)
+
