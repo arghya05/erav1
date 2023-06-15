@@ -1,7 +1,7 @@
 # Finetune CNN Architecture on MNIST dataset
 
 Objective is to fine tune the base code in [MNIST Basic Code](https://github.com/gkdivya/EVA/blob/main/5_CodingDrillDown/Experiments/MNIST_Step%200_BasicSetup.ipynb) to achieve **99.4%** validation accuracy with **less than 10k Parameters** in 15 Epochs. 
-Store the model in model.py file 
+Store the best model in model.py file for other experimental model its embedded into the code 
 
 ## How we did:
 
