@@ -1,5 +1,5 @@
 # EVA 7 Session 6 Assignment - Experimentation with Normalizations
-## Submission by Abhinav Pujahari (abhinavpujahari@gmail.com) - No Partners
+
 
 ## Goals
 1.Change the dataset to CIFAR10
