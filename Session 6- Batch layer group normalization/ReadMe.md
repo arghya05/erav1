@@ -53,10 +53,10 @@ Both layer and group normalization perform in a more "expected" fashion with bot
 
 Overfitting is not observed for both models with layer and group normalizations, with test accuracies staying above training accuracies for all later epochs (>10).
 
-[model.py](https://github.com/a-pujahari/EVA7/blob/main/Session6/model.py) contains the NN model which can accept multiple normalization selection inputs through an added input variable.
+[model.py](https://github.com/arghya05/erav1/blob/master/Session%206-%20Batch%20layer%20group%20normalization/model.py) contains the NN model which can accept multiple normalization selection inputs through an added input variable.
 
 ## Test & Training Accuracies & Loss
-![Loss and Accuracy Graphs](https://github.com/a-pujahari/EVA7/blob/main/Session6/LossAccuracyGraphs.png)
+![Session 6- Batch layer group normalization/LossAccuracyGraphs.png)
 
 Please note that the curves for Batch Normalization above include L1 regularization with a weight of 0.01.
 Instabilities in the learning process are evident from the jumps in the test loss and test accuracy curves for Batch Normalization.
@@ -64,11 +64,11 @@ Instabilities in the learning process are evident from the jumps in the test los
 ## Misclassified Images
 
 ### Batch Normalization with L1 Regularization
-![BatchNorm](https://github.com/a-pujahari/EVA7/blob/main/Session6/BatchNorm_L1Reg_misclassified.png)
+![BatchNorm](https://github.com/arghya05/erav1/blob/master/Session%206-%20Batch%20layer%20group%20normalization/BatchNorm_L1Reg_misclassified.png)
 
 ### Layer Normalization
-![LayerNorm](https://github.com/a-pujahari/EVA7/blob/main/Session6/LayerNorm_misclassified.png)
+![LayerNorm](https://github.com/arghya05/erav1/blob/master/Session%206-%20Batch%20layer%20group%20normalization/LayerNorm_misclassified.png)
 
 ### Group Normalization
-![GroupNorm](https://github.com/a-pujahari/EVA7/blob/main/Session6/GroupNorm_misclassified.png)
+![GroupNorm](https://github.com/arghya05/erav1/blob/master/Session%206-%20Batch%20layer%20group%20normalization/LayerNorm_misclassified.png)
 
