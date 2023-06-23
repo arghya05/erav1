@@ -2,12 +2,27 @@
 ## Submission by Abhinav Pujahari (abhinavpujahari@gmail.com) - No Partners
 
 ## Goals
-1. Write single model.py file that accepts group, batch or layer normalization as parameters.
-2. Single notebook must run 3 models - group normalizatiom, layer normalization and Batch normalization + L1 regularization
-3. Create graphs with - 
-  a. Test & Validation loss for all 3 models together,
-  b. Test & Validation accuracy for all 3 models together
-4. Find 10 misclassified images and show them as 5x2 image matrix in 3 separately annotated images
+1.Change the dataset to CIFAR10
+2. Make this network:
+C1 C2 c3 P1 C3 C4 C5 c6 P2 C7 C8 C9 GAP C10
+3 .Keep the parameter count less than 50000
+4 .Try and add one layer to another
+5.Max Epochs is 20
+6.You are making 3 versions of the above code (in each case achieve above 70% accuracy):
+7.Network with Group Normalization
+8. Network with Layer Normalization
+9.Network with Batch Normalization
+10.Share these details
+11.Training accuracy for 3 models
+12.Test accuracy for 3 models
+13.Find 10 misclassified images for the BN model, and show them as a 5x2 image matrix in 3 separately annotated images. 
+14.write an explanatory README file that explains:
+15.what is your code all about,
+16.your findings for normalization techniques,
+17.add all your graphs
+18.your collection-of-misclassified-images 
+19.Upload your complete assignment on GitHub and share the link on LMS
+
 
 ## Normalization
 Normalization refers to the process of standardizing inputs to a neural network. Different normalization techniques can standardize different segments of the input. 
