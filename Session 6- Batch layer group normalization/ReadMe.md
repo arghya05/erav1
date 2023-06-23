@@ -64,11 +64,11 @@ Instabilities in the learning process are evident from the jumps in the test los
 ## Misclassified Images
 
 ### Batch Normalization with L1 Regularization
-![BatchNorm](https://github.com/arghya05/erav1/blob/master/Session%206-%20Batch%20layer%20group%20normalization/BatchNorm_L1Reg_misclassified.png)
+![BatchNorm](batch_norm.png)
 
 ### Layer Normalization
-![LayerNorm](https://github.com/arghya05/erav1/blob/master/Session%206-%20Batch%20layer%20group%20normalization/LayerNorm_misclassified.png)
+![LayerNorm](layer_norm.png)
 
 ### Group Normalization
-![GroupNorm](https://github.com/arghya05/erav1/blob/master/Session%206-%20Batch%20layer%20group%20normalization/LayerNorm_misclassified.png)
+![GroupNorm](group_norm.png)
 
