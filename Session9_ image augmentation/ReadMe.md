@@ -1,11 +1,4 @@
-# EVA 7 Assignment 7 - Advanced Concepts
-
-Submission by: 
-Abhinav Pujahari (abhinavpujahari@gmail.com) - Model Design, Receptive Field Calculation, Training & Optimization, ReadMe File
-
-Satwik Swarup Mishra (satwiksmishra@gmail.com)
-
-Yuvaraj Venkatasamy (yuvaraj100493@gmail.com)
+# EVA 9  - Image augmentation
 
 ## Goals
 1. Create a classification NN to train the CIFAR10 dataset to beyond 87% accuracy.
@@ -23,7 +16,7 @@ Classes include plane, car, bird, cat, deer, dog, frog, horse, ship and truck.
 Object classess span different scales (in the real world) suggesting that the features to be learned from different classes may be of different scales and might require the use of varying receptive fields.
 
 ## Notebook with model implementation and training logs
-Notebook with the required training and testing logs is present [here](https://github.com/a-pujahari/EVA7/blob/main/Session7/EVA7_Assignment7_AdvancedConcepts_AbhinavP.ipynb).
+Notebook with the required training and testing logs is present [here](https://github.com/arghya05/erav1/blob/master/Session9_%20image%20augmentation/Image_Augmentation.ipynb).
 
 ## Implementation Details
 
@@ -41,7 +34,7 @@ Albumentations library is used to apply horizontal flip, grayscale, coase dropou
 
 Total parameters: 94,292
 
-The full model code can be found [here](https://github.com/a-pujahari/EVA7/blob/main/Session7/model_updated.py).
+The full model code can be found [here](https://github.com/arghya05/erav1/blob/master/Session9_%20image%20augmentation/model_updated.py).
 
 ## Receptive Field Calculation
 
