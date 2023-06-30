@@ -38,7 +38,7 @@ Albumentations library is used to apply horizontal flip, grayscale, coase dropou
 
 Total parameters: 94,292
 
-The full model code can be found [here]([[Session7_ image augmentation/EVA7_Assignment7_Image_Augmentation.ipynb](https://github.com/arghya05/erav1/blob/master/Session7_%20image%20augmentation/EVA7_Assignment7_Image_augment%20.ipynb))).
+The full model code can be found [here]([[https://github.com/arghya05/erav1/blob/master/Session7_%20image%20augmentation/Image_Augmentation.ipynb))).
 
 ## Receptive Field Calculation
 
