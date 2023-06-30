@@ -20,7 +20,7 @@ Classes include plane, car, bird, cat, deer, dog, frog, horse, ship and truck.
 Object classess span different scales (in the real world) suggesting that the features to be learned from different classes may be of different scales and might require the use of varying receptive fields.
 
 ## Notebook with model implementation and training logs
-Notebook with the required training and testing logs is present [here](.
+Notebook with the required training and testing logs is present [here]([https://github.com/arghya05/erav1/blob/master/Session7_%20image%20augmentation/Image_Augmentation.ipynb.])
 
 ## Implementation Details
 
@@ -38,7 +38,7 @@ Albumentations library is used to apply horizontal flip, grayscale, coase dropou
 
 Total parameters: 94,292
 
-The full model code can be found [here]([[https://github.com/arghya05/erav1/blob/master/Session7_%20image%20augmentation/Image_Augmentation.ipynb))).
+The full model code can be found [here]([https://github.com/arghya05/erav1/blob/master/Session7_%20image%20augmentation/Image_Augmentation.ipynb))).
 
 ## Receptive Field Calculation
 
