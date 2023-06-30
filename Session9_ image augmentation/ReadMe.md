@@ -1,13 +1,14 @@
 # EVA 9  - Image augmentation
 
 ## Goals
-1. Create a classification NN to train the CIFAR10 dataset to beyond 87% accuracy.
-2. Network must have less than 100k parameters
-3. One of the layers must use dilated convolution
-4. 2 of the layers must use depthwise separable convolution
-5. GAP must be used and mapped to the number of classes
+1. has the architecture to C1C2C3C40 (No MaxPooling, but 3 convolutions, where the last one has a stride of 2 instead) (If you can figure out how to use Dilated kernels here instead of MP or strided convolution, then 200pts extra!)
+2. total RF must be more than 44
+3. one of the layers must use Depthwise Separable Convolution
+4. one of the layers must use Dilated Convolution
+5. use GAP (compulsory)
 6. Use Albumentation library to apply transformations
-7. Code must be modular
+7. use albumentation library and apply
+8. achieve 85% accuracy, as many epochs as you want. Total Params to be less than 200k.
 
 ## Dataset
 The CIFAR-10 dataset consists of 60000 32x32 colour images in 10 classes. There are 50000 training images and 10000 test images.
