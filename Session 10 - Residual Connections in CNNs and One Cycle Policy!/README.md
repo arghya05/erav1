@@ -202,12 +202,6 @@ Following Data Augmentation is applied, refer [this](https://github.com/gkdivya/
 ![image](https://user-images.githubusercontent.com/42609155/125092308-d5477380-e0ee-11eb-863d-271eb958a6e4.png)
 
 
-### Collaborators
-
-- Divya Kamat (divya.r.kamat@gmail.com)
-- Divya G K (gkdivya@gmail.com)
-- Sarang (jaya.sarangan@gmail.com)
-- Garvit Garg (garvit.gargs@gmail.com)
 
 
 
