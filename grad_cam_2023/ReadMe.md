@@ -1,13 +1,19 @@
-# EVA 7 Assignment 9
-## Submission by Abhinav Pujahari (abhinavpujahari@gmail.com)
+# Grad Cam Assingment 
+## 
 
 ## Goals:
-1. Write custom ResNet architecture for CIFAR 10
-2. Use LR search to find optimal learning rate
-3. Use OneCycle LR scheduling with LR max and min found from the previous step
-4. Train for 24 Epochs in total with max LR reached at the 5th Epoch
-5. Use padding, randomCrop, FlipLR and Cutout for augmentations & Batch size of 512
-6. Target Accuracy of >90%
+1. train resnet18 for 20 epochs on the CIFAR10 dataset
+2. show loss curves for test and train datasets
+3. show a gallery of 10 misclassified images
+4. show gradcamLinks to an external site. output on 10 misclassified images. Remember if you are applying GradCAM on a channel that is less than 5px, then please don't bother to submit the assignment. 😡🤬🤬🤬🤬
+5. Once done, upload the code to GitHub, and share the code. This readme must link to the main repo so we can read your file structure. 
+Train for 20 epochs
+6. Get 10 misclassified images
+7. Get 10 GradCam outputs on any misclassified images (remember that you MUST use the library we discussed in the class)
+8. Apply these transforms while training:
+9. RandomCrop(32, padding=4)
+10. CutOut(16x16)
+
 
 ## Torch CV Utils
 
