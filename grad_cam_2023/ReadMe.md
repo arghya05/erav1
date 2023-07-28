@@ -21,7 +21,7 @@ Additional support/wrapper repo was updated with augmentations required for this
 
 ## Notebook
 
-The notebook for this assignment can be accessed here: [EVA7_Assignment9_AbhinavP](https://github.com/a-pujahari/EVA7/blob/main/Session9/EVA7_Assignment9_AbhinavP.ipynb)
+The notebook for this assignment can be accessed here: [https://github.com/arghya05/erav1/blob/master/grad_cam_2023/Grad_cam_assingment_final.ipynb)
 
 ## Analysis
 
@@ -33,17 +33,17 @@ Optimizer - Adam
 Scheduler - OneCycleLR with pct_start = 0.2 (~5/24) since max_lr is required at Epoch 5, out of 24 total epochs
 
 ## Learning Rate Range Test Curve
-![LR_test](https://github.com/a-pujahari/EVA7/blob/main/Session9/LR_test.png)
+![LR_test](https://github.com/arghya05/erav1/blob/master/grad_cam_2023/LR_test.png)
 
 ## Loss Curves
-![Loss and Accuracy](https://github.com/a-pujahari/EVA7/blob/main/Session9/Loss%20and%20accuracy.png)
+![Loss and Accuracy](https://github.com/arghya05/erav1/blob/master/grad_cam_2023/Loss%20and%20accuracy.png)
 
 ## Sample Misclassified Images
-![Misclassified](https://github.com/a-pujahari/EVA7/blob/main/Session9/misclassified.png)
+![Misclassified](https://github.com/arghya05/erav1/blob/master/grad_cam_2023/misclassified.png)
 
 ## GradCam Output
-![gradcam1](https://github.com/a-pujahari/EVA7/blob/main/Session9/gradcam1.png)
-![gradcam2](https://github.com/a-pujahari/EVA7/blob/main/Session9/gradcam2.png)
+![gradcam1](https://github.com/arghya05/erav1/blob/master/grad_cam_2023/gradcam1.png)
+![gradcam2](https://github.com/arghya05/erav1/blob/master/grad_cam_2023/gradcam2.png)
 
 ## Training Logs 
 
